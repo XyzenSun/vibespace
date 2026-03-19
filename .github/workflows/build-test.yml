@@ -1,16 +1,16 @@
 name: Build Test
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'build-test/**'
-      - '.github/workflows/build-test.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'build-test/**'
-      - '.github/workflows/build-test.yml'
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - 'build-test/**'
+  #     - '.github/workflows/build-test.yml'
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - 'build-test/**'
+  #     - '.github/workflows/build-test.yml'
   workflow_dispatch:
 
 env:

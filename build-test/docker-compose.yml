@@ -16,7 +16,6 @@ services:
       - SSH_PRIVATE_KEY=${SSH_PRIVATE_KEY:-}
       - SSH_PUBLIC_KEY=${SSH_PUBLIC_KEY:-}
       - CS_PASSWORD=${CS_PASSWORD:-}
-      - CF_TUNNEL_TOKEN=${CF_TUNNEL_TOKEN:-}
 
 volumes:
   workspace:

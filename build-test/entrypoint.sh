@@ -1,13 +1,10 @@
 #!/bin/bash
 set -e
 
-# --- 配置 DNS ---
-echo -e "nameserver 1.1.1.1\nnameserver 114.114.114.114\nnameserver 119.29.29.29" | tee /etc/resolv.conf > /dev/null
-
-# --- 合并镜像默认文件到持久化卷 ---
+# --- 恢复 /root 默认文件 ---
 cp -an /root-defaults/root/. /root/ 2>/dev/null || true
 
-# --- Git 配置 ---
+# --- Git ---
 if [ -n "$GIT_USER_NAME" ]; then
     git config --global user.name "$GIT_USER_NAME"
 fi
@@ -15,7 +12,7 @@ if [ -n "$GIT_USER_EMAIL" ]; then
     git config --global user.email "$GIT_USER_EMAIL"
 fi
 
-# --- SSH 密钥配置（客户端，用于 git 操作）---
+# --- SSH 密钥 ---
 if [ -n "$SSH_PRIVATE_KEY" ]; then
     mkdir -p ~/.ssh && chmod 700 ~/.ssh
     echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
@@ -28,57 +25,82 @@ if [ -n "$SSH_PRIVATE_KEY" ]; then
     chmod 644 ~/.ssh/known_hosts
 fi
 
-# --- SSH 服务端密码 ---
+# --- SSH 密码 ---
 echo "root:${ROOT_PASSWORD:-root123}" | chpasswd
 
-# --- code-server 密码认证 ---
+# --- code-server 认证 ---
 AUTH_ARGS="--auth none"
 if [ -n "$CS_PASSWORD" ]; then
     export PASSWORD="$CS_PASSWORD"
     AUTH_ARGS="--auth password"
 fi
 
-# --- Cloudflare Tunnel ---
-if [ -n "$CF_TUNNEL_TOKEN" ]; then
-    wget -q -O /usr/local/bin/cloudflared "https://gh-proxy.org/https://github.com/cloudflare/cloudflared/releases/download/2026.3.0/cloudflared-linux-amd64"
-    chmod +x /usr/local/bin/cloudflared
-    nohup /usr/local/bin/cloudflared tunnel run --token "$CF_TUNNEL_TOKEN" > /var/log/cloudflared.log 2>&1 &
-fi
-
 # --- Vibe 快捷命令 ---
 echo 'alias vibe="IS_SANDBOX=1 claude --dangerously-skip-permissions"' >> /root/.bashrc
 
-# --- 写入使用说明 ---
+# --- Claude MCP Servers ---
+claude mcp add-json -s user 'context7' '{"command":"npx","args":["-y","@upstash/context7-mcp@latest"]}' || true
+claude mcp add-json -s user 'mcp-deepwiki' '{"command":"npx","args":["-y","mcp-deepwiki@latest"]}' || true
+
+# --- Claude Code 输出样式 ---
+mkdir -p ~/.claude/output-styles
+claude config set outputStyle "default" -g 2>/dev/null || true
+
+# --- Claude Code 工作流 (来自 UfoMiao/zcf) ---
+mkdir -p ~/.claude/commands/zcf
+mkdir -p ~/.claude/agents/zcf
+curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/claude-code/zh-CN/workflow/common/commands/init-project.md" -o ~/.claude/commands/zcf/init-project.md 2>/dev/null || true
+mkdir -p ~/.claude/agents/zcf/common
+curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/claude-code/zh-CN/workflow/common/agents/init-architect.md" -o ~/.claude/agents/zcf/common/init-architect.md 2>/dev/null || true
+curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/claude-code/zh-CN/workflow/common/agents/get-current-datetime.md" -o ~/.claude/agents/zcf/common/get-current-datetime.md 2>/dev/null || true
+curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/common/workflow/sixStep/zh-CN/workflow.md" -o ~/.claude/commands/zcf/workflow.md 2>/dev/null || true
+curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/claude-code/zh-CN/workflow/plan/commands/feat.md" -o ~/.claude/commands/zcf/feat.md 2>/dev/null || true
+mkdir -p ~/.claude/agents/zcf/plan
+curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/claude-code/zh-CN/workflow/plan/agents/planner.md" -o ~/.claude/agents/zcf/plan/planner.md 2>/dev/null || true
+curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/claude-code/zh-CN/workflow/plan/agents/ui-ux-designer.md" -o ~/.claude/agents/zcf/plan/ui-ux-designer.md 2>/dev/null || true
+curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/common/workflow/git/zh-CN/git-commit.md" -o ~/.claude/commands/zcf/git-commit.md 2>/dev/null || true
+curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/common/workflow/git/zh-CN/git-worktree.md" -o ~/.claude/commands/zcf/git-worktree.md 2>/dev/null || true
+curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/common/workflow/git/zh-CN/git-rollback.md" -o ~/.claude/commands/zcf/git-rollback.md 2>/dev/null || true
+curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/common/workflow/git/zh-CN/git-cleanBranches.md" -o ~/.claude/commands/zcf/git-cleanBranches.md 2>/dev/null || true
+curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/claude-code/zh-CN/workflow/bmad/commands/bmad-init.md" -o ~/.claude/commands/zcf/bmad-init.md 2>/dev/null || true
+
+# --- Claude Code settings.json ---
+mkdir -p ~/.claude
+cat > ~/.claude/settings.json << 'SETTINGSEOF'
+{
+  "env": {
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "DISABLE_AUTOUPDATER": "1"
+  }
+}
+SETTINGSEOF
+
+# --- README ---
 cat > /workspace/README.md << 'READMEEOF'
 # Development Environment
 
 ## 已安装的工具
 
 ### 编程语言
+- Node.js / npm
 - Go
 - C
 - Python
-- Node.js / npm
 - Rust
 - C++
 - Java
 
 ### AI 工具
 - Claude Code: Anthropic CLI 开发工具
-- CCLine: Claude Code 状态行工具
-- CC-Switch: Claude Code 多账户切换工具
+- CC-Switch: ClaudeCode/Codex 提供商 MCP Skils管理工具
 
-### CCLine 配置
-如需集成到 Claude Code，请在 `~/.claude/settings.json` 中配置：
-```json
-{
-  "statusLine": {
-    "type": "command",
-    "command": "ccline",
-    "padding": 0
-  }
-}
-```
+### Claude Code 工作流
+- ZCF 工作流: 来自 UfoMiao/zcf 项目，包含通用工具、六步开发、功能规划、Git 工作流、BMAD 企业级
+
+> 使用方式: 在 Claude Code 中输入 `/zcf:命令名` 调用工作流
+
+### Claude Code 输出样式
+- **默认**: Claude Code 默认输出样式
 
 ### 快捷命令
 输入 `vibe` 即可执行: `IS_SANDBOX=1 claude --dangerously-skip-permissions`
@@ -90,11 +112,9 @@ cat > /workspace/README.md << 'READMEEOF'
 - `SSH_PRIVATE_KEY`: SSH 私钥
 - `SSH_PUBLIC_KEY`: SSH 公钥
 - `CS_PASSWORD`: Code-Server 密码 (不设置则免密)
-- `CF_TUNNEL_TOKEN`: Cloudflare Tunnel Token
 READMEEOF
 
-# --- 启动 SSH 服务（后台）---
+# --- 启动 ---
 /usr/sbin/sshd
 
-# --- 启动 code-server（前台）---
 exec code-server --bind-addr 0.0.0.0:8080 $AUTH_ARGS /workspace

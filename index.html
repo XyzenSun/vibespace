@@ -312,7 +312,7 @@
       <!-- 步骤 3: 编程语言 -->
       <div x-show="currentStep === 3" x-transition class="fade-in">
         <h2 class="text-xl font-bold mb-2">🛠️ 编程语言</h2>
-        <p class="text-gray-500 text-sm mb-6">选择需要安装的编程语言环境（可多选）。仅包含语言运行时，不含常用框架。</p>
+        <p class="text-gray-500 text-sm mb-6">选择需要安装的编程语言环境（可多选）。仅包含语言运行时，不含框架。</p>
 
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-w-3xl">
           <template x-for="lang in DEFAULTS.languages" :key="lang.id">
@@ -369,7 +369,7 @@
             <!-- 用户自行确保提示 -->
             <div class="bg-yellow-950/20 border border-yellow-800/30 rounded-lg p-2 mt-2">
               <p class="text-xs text-yellow-300/80 flex items-center gap-1">
-                <span>⚠️</span> 请自行确认所选版本号正确且可用，错误的版本号将导致构建失败
+                <span>⚠️</span> 请确认所选版本号正确且可用，错误的版本号将导致构建失败
               </p>
             </div>
           </div>

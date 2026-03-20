@@ -61,7 +61,7 @@ const DEFAULTS = {
       aptPkgs: [], devTools: [],
     },
     {
-      id: 'nodejs', label: 'Node.js / npm', icon: '🟢',
+      id: 'nodejs', label: 'Node.js / Ts / npm', icon: '🟢',
       hasVersion: true, defaultVersion: '20',
       versions: ['22', '20', '18'],
       installNote: '通过 NodeSource 脚本安装，版本号为大版本号',

@@ -41,17 +41,13 @@
         </div>
       </div>
 
-      <!-- 预设 -->
+      <!-- 项目地址 -->
       <div class="flex items-center gap-2">
-        <span class="text-xs text-gray-500 hidden sm:inline">预设:</span>
-        <template x-for="(preset, key) in DEFAULTS.presets" :key="key">
-          <button
-            @click="applyPreset(key)"
-            :class="currentPreset === key ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'"
-            class="px-3 py-1 rounded-full text-xs transition-all"
-            x-text="preset.label"
-          ></button>
-        </template>
+        <a href="https://github.com/XyzenSun/vibespace" target="_blank" rel="noopener noreferrer"
+           class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-all">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          <span>本项目GitHub仓库</span>
+        </a>
       </div>
     </div>
   </header>
@@ -119,7 +115,7 @@
       <!-- 步骤 1: 地区 -->
       <div x-show="currentStep === 1" x-transition class="fade-in">
         <h2 class="text-xl font-bold mb-2">🌏 宿主机地区</h2>
-        <p class="text-gray-500 text-sm mb-6">选择服务器所在地区，我们将据此配置最优的镜像源和网络设置</p>
+        <p class="text-gray-500 text-sm mb-6">选择服务器所在地区，将据此配置镜像源和网络设置</p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
           <!-- 中国 -->
@@ -171,7 +167,7 @@
       <!-- 步骤 2: Code-Server -->
       <div x-show="currentStep === 2" x-transition class="fade-in">
         <h2 class="text-xl font-bold mb-2">💻 Code-Server</h2>
-        <p class="text-gray-500 text-sm mb-6">在浏览器中使用 VS Code 编辑器</p>
+        <p class="text-gray-500 text-sm mb-6">若要在 CNB / Github Codespace /HuggingFace 等部署VibeSpace，或希望在浏览器中使用VsCode，请启用 Code-Server</p>
 
         <!-- 开关 -->
         <div class="flex items-center gap-4 mb-6">
@@ -499,7 +495,7 @@
                   </div>
                 </template>
                 <div x-show="claudeMcpServers.length === 0" class="text-xs text-gray-600">
-                  选择上方预设或点击「+ 添加 MCP」手动配置，将在容器启动时自动执行 <code class="bg-gray-800 px-1 rounded">claude mcp add-json</code>
+                  选择上方预设或点击「+ 添加 MCP」手动配置，将在容器启动时自动执行 <code class="bg-gray-800 px-1 rounded">claude mcp add-json</code> <br>如果您不了解，建议将我提供的预设全选，这些MCP对开发帮助很大。
                 </div>
                 <div x-show="claudeMcpServers.length > 0" class="mt-1">
                   <p class="text-xs text-gray-600">JSON 格式: <code class="bg-gray-800 px-1 rounded text-gray-400">{"command":"npx","args":["-y","pkg@latest"]}</code> 或 <code class="bg-gray-800 px-1 rounded text-gray-400">{"type":"http","url":"https://..."}</code></p>
@@ -594,7 +590,7 @@
             <div class="flex items-center justify-between mb-3">
               <div>
                 <h3 class="font-bold text-sm">Cloudflare Tunnel</h3>
-                <p class="text-gray-500 text-xs mt-0.5">内网穿透，安全暴露本地服务</p>
+                <p class="text-gray-500 text-xs mt-0.5">内网穿透，安全暴露本地服务。在云平台如 HuggingFace 中启用此选项有账号封禁风险；如果您位于中国且在自己的机器中部署，建议在宿主机环境中使用 WireGuard、EasyTier 等安全的暴露端口方案，Tunnel 在中国连通性不佳</p>
               </div>
               <button
                 @click="cfTunnel = !cfTunnel"

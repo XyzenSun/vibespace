@@ -47,18 +47,46 @@ RUN code-server --install-extension MS-CEINTL.vscode-language-pack-zh-hans \
     && code-server --install-extension saltcoreyan.json-format-sortcore \
     && code-server --install-extension redhat.vscode-yaml \
     && code-server --install-extension Anthropic.claude-code \
-    && code-server --install-extension golang.go \
+    && code-server --install-extension ms-python.python \
     && code-server --install-extension streetsidesoftware.code-spell-checker \
     && code-server --install-extension FittenTech.Fitten-Code \
     && code-server --install-extension RooVeterinaryInc.roo-cline \
-    && code-server --install-extension ms-python.python \
     && code-server --install-extension eamodio.gitlens \
+    && code-server --install-extension golang.go \
     && rm -rf /tmp/* /root/.cache
 
 # 层6: AI 工具
-RUN npm install -g @anthropic-ai/claude-code \
+RUN npm install -g @anthropic-ai/claude-code @cometix/ccline \
     && npm cache clean --force \
     && CC_SWITCH_FORCE=1 curl -fsSL https://github.com/SaladDay/cc-switch-cli/releases/latest/download/install.sh | bash
+
+# 层6b: Claude Code 配置
+RUN mkdir -p ~/.claude \
+    && printf '%s' '{"statusLine":{"type":"command","command":"ccline","padding":0},"env":{"CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC":"1","DISABLE_AUTOUPDATER":"1"}}' > ~/.claude/settings.json \
+    && mkdir -p ~/.claude/output-styles \
+    && (curl -sSL "https://raw.githubusercontent.com/SaladDay/zcf/main/templates/common/output-styles/zh-CN/engineer-professional.md" -o ~/.claude/output-styles/engineer-professional.md 2>/dev/null || true) \
+    && (claude config set outputStyle "engineer-professional" -g 2>/dev/null || true) \
+    && (claude mcp add-json -s user 'mcp-deepwiki' '{"command":"npx","args":["-y","mcp-deepwiki@latest"]}' || true) \
+    && (claude mcp add-json -s user 'context7' '{"command":"npx","args":["-y","@upstash/context7-mcp@latest"]}' || true) \
+    && mkdir -p ~/.claude/commands/zcf \
+    && mkdir -p ~/.claude/agents/zcf \
+    && (curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/claude-code/zh-CN/workflow/common/commands/init-project.md" -o ~/.claude/commands/zcf/init-project.md 2>/dev/null || true) \
+    && mkdir -p ~/.claude/agents/zcf/common \
+    && (curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/claude-code/zh-CN/workflow/common/agents/init-architect.md" -o ~/.claude/agents/zcf/common/init-architect.md 2>/dev/null || true) \
+    && (curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/claude-code/zh-CN/workflow/common/agents/get-current-datetime.md" -o ~/.claude/agents/zcf/common/get-current-datetime.md 2>/dev/null || true) \
+    && (curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/common/workflow/sixStep/zh-CN/workflow.md" -o ~/.claude/commands/zcf/workflow.md 2>/dev/null || true) \
+    && (curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/claude-code/zh-CN/workflow/plan/commands/feat.md" -o ~/.claude/commands/zcf/feat.md 2>/dev/null || true) \
+    && mkdir -p ~/.claude/agents/zcf/plan \
+    && (curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/claude-code/zh-CN/workflow/plan/agents/planner.md" -o ~/.claude/agents/zcf/plan/planner.md 2>/dev/null || true) \
+    && (curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/claude-code/zh-CN/workflow/plan/agents/ui-ux-designer.md" -o ~/.claude/agents/zcf/plan/ui-ux-designer.md 2>/dev/null || true) \
+    && (curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/common/workflow/git/zh-CN/git-commit.md" -o ~/.claude/commands/zcf/git-commit.md 2>/dev/null || true) \
+    && (curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/common/workflow/git/zh-CN/git-worktree.md" -o ~/.claude/commands/zcf/git-worktree.md 2>/dev/null || true) \
+    && (curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/common/workflow/git/zh-CN/git-rollback.md" -o ~/.claude/commands/zcf/git-rollback.md 2>/dev/null || true) \
+    && (curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/common/workflow/git/zh-CN/git-cleanBranches.md" -o ~/.claude/commands/zcf/git-cleanBranches.md 2>/dev/null || true) \
+    && (curl -sSL "https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/claude-code/zh-CN/workflow/bmad/commands/bmad-init.md" -o ~/.claude/commands/zcf/bmad-init.md 2>/dev/null || true)
+
+# 自定义层
+RUN echo "自定义层测试"
 
 # 层7: SSH 配置
 RUN mkdir -p /run/sshd \

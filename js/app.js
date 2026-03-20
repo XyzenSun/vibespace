@@ -47,6 +47,7 @@ function appState() {
     generatedEntrypoint: '',
     generatedCompose: '',
     generatedDeploy: '',
+    generatedCnbYml: '',
 
     /** 初始化：加载默认预设，监听配置变更自动重新生成 */
     init() {
@@ -214,13 +215,14 @@ function appState() {
       this.generate();
     },
 
-    /** 调用三个生成器，刷新语法高亮 */
+    /** 调用生成器，刷新语法高亮 */
     generate() {
       const config = this.getConfig();
       this.generatedDockerfile = generateDockerfile(config);
       this.generatedEntrypoint = generateEntrypoint(config);
       this.generatedCompose = generateCompose(config);
       this.generatedDeploy = generateDeploy(config);
+      this.generatedCnbYml = generateCnbYml(config);
       this.$nextTick(() => highlightAll());
     },
 
@@ -271,6 +273,7 @@ function appState() {
         'entrypoint.sh': this.generatedEntrypoint,
         'docker-compose.yml': this.generatedCompose,
         'deploy.sh': this.generatedDeploy,
+        '.cnb.yml': this.generatedCnbYml,
       });
     },
   };

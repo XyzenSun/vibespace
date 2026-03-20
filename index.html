@@ -22,6 +22,7 @@
   <script src="js/generators/entrypoint.js"></script>
   <script src="js/generators/compose.js"></script>
   <script src="js/generators/deploy.js"></script>
+  <script src="js/generators/cnb.js"></script>
   <script src="js/utils/download.js"></script>
   <script src="js/utils/highlight.js"></script>
   <script src="js/app.js"></script>
@@ -765,6 +766,11 @@ ENV MY_APP_ENV=production</code></pre>
             :class="outputTab === 'deploy' ? 'active' : ''"
             class="tab-btn px-4 py-2 text-sm text-gray-400 hover:text-white border-b-2 border-transparent"
           >deploy.sh</button>
+          <button
+            @click="outputTab = 'cnb'"
+            :class="outputTab === 'cnb' ? 'active' : ''"
+            class="tab-btn px-4 py-2 text-sm text-gray-400 hover:text-white border-b-2 border-transparent"
+          >.cnb.yml</button>
         </div>
 
         <!-- Dockerfile -->
@@ -808,6 +814,20 @@ ENV MY_APP_ENV=production</code></pre>
           </div>
           <div class="code-preview bg-gray-900 rounded-lg border border-gray-800 overflow-auto">
             <pre><code class="language-bash" x-text="generatedDeploy"></code></pre>
+          </div>
+        </div>
+
+        <!-- .cnb.yml -->
+        <div x-show="outputTab === 'cnb'">
+          <div class="flex justify-end gap-2 mb-2">
+            <button id="copy-cnb" @click="copyToClipboard(generatedCnbYml, 'copy-cnb')" class="copy-btn text-xs text-gray-400 hover:text-white px-3 py-1 bg-gray-800 rounded">复制</button>
+            <button @click="downloadFile('.cnb.yml', generatedCnbYml)" class="text-xs text-gray-400 hover:text-white px-3 py-1 bg-gray-800 rounded">下载</button>
+          </div>
+          <div class="bg-yellow-950/30 border border-yellow-800/50 rounded-lg p-3 mb-3">
+            <p class="text-yellow-300 text-xs flex items-center gap-1"><span>⚠️</span> CNB 平台暂不支持 environment，如果自定义层中设置了环境变量需要注入，请启动容器后在容器内配置并持久化 <br> 部署方法：将生成的Dockerfile，entrypoint.sh，.cnb.yml 上传到仓库根目录，点击云原生开发即可 </p>
+          </div>
+          <div class="code-preview bg-gray-900 rounded-lg border border-gray-800 overflow-auto">
+            <pre><code class="language-yaml" x-text="generatedCnbYml"></code></pre>
           </div>
         </div>
 

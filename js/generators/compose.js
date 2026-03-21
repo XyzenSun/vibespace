@@ -28,8 +28,16 @@ function generateCompose(config) {
   // 环境变量
   lines.push('    environment:');
   lines.push(`      - ROOT_PASSWORD=${config.rootPassword || '${ROOT_PASSWORD:-root123}'}`);
-  lines.push('      - GIT_USER_NAME=${GIT_USER_NAME:-}');
-  lines.push('      - GIT_USER_EMAIL=${GIT_USER_EMAIL:-}');
+  if (config.gitUserName) {
+    lines.push(`      - GIT_USER_NAME=${config.gitUserName}`);
+  } else {
+    lines.push('      - GIT_USER_NAME=${GIT_USER_NAME:-}');
+  }
+  if (config.gitUserEmail) {
+    lines.push(`      - GIT_USER_EMAIL=${config.gitUserEmail}`);
+  } else {
+    lines.push('      - GIT_USER_EMAIL=${GIT_USER_EMAIL:-}');
+  }
   if (config.sshPrivateKey) {
     const escaped = config.sshPrivateKey.replace(/\n/g, '\\n');
     lines.push(`      - SSH_PRIVATE_KEY=${escaped}`);

@@ -30,6 +30,8 @@ function appState() {
     claudeWorkflows: [],      // 已选中的工作流 ID 数组
     claudeOutputStyle: '',    // 已选中的输出样式 ID
     claudeDisableTelemetry: false, // 禁止遥测与更新
+    gitUserName: '',
+    gitUserEmail: '',
     rootPassword: '',
     csPassword: '',
     sshPrivateKey: '',
@@ -57,6 +59,7 @@ function appState() {
         'languages', 'languageVersions', 'pythonVenv',
         'aiTools', 'aiToolVersions', 'claudeMcpServers',
         'claudeWorkflows', 'claudeOutputStyle', 'claudeDisableTelemetry',
+        'gitUserName', 'gitUserEmail',
         'rootPassword', 'csPassword', 'sshPrivateKey', 'sshPublicKey',
         'cfTunnel', 'cfToken', 'vibeCommand', 'vibeCommandText',
         'volumeMode', 'customDockerfile',
@@ -202,6 +205,8 @@ function appState() {
       this.claudeWorkflows = p.claudeWorkflows ? [...p.claudeWorkflows] : [];
       this.claudeOutputStyle = p.claudeOutputStyle || '';
       this.claudeDisableTelemetry = p.claudeDisableTelemetry || false;
+      this.gitUserName = p.gitUserName || '';
+      this.gitUserEmail = p.gitUserEmail || '';
       this.rootPassword = p.rootPassword || '';
       this.csPassword = p.csPassword || '';
       this.sshPrivateKey = p.sshPrivateKey || '';
@@ -235,6 +240,7 @@ function appState() {
         aiTools: this.aiTools, aiToolVersions: this.aiToolVersions, claudeMcpServers: this.claudeMcpServers,
         claudeWorkflows: this.claudeWorkflows, claudeOutputStyle: this.claudeOutputStyle,
         claudeDisableTelemetry: this.claudeDisableTelemetry,
+        gitUserName: this.gitUserName, gitUserEmail: this.gitUserEmail,
         rootPassword: this.rootPassword, csPassword: this.csPassword,
         sshPrivateKey: this.sshPrivateKey, sshPublicKey: this.sshPublicKey,
         cfTunnel: this.cfTunnel, cfToken: this.cfToken,

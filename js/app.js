@@ -5,7 +5,7 @@ function appState() {
     currentStep: 1,
     totalSteps: 6,
     steps: [
-      { num: 1, title: '宿主机地区', icon: '🌏' },
+      { num: 1, title: '宿主机环境', icon: '🌏' },
       { num: 2, title: 'Code-Server', icon: '💻' },
       { num: 3, title: '编程语言', icon: '🛠️' },
       { num: 4, title: 'AI 工具', icon: '🤖' },
@@ -16,6 +16,7 @@ function appState() {
 
     /* 配置状态 */
     region: 'china',
+  deployPlatform: 'local', // 'local' | 'cnb'
     codeServer: true,
     extensions: DEFAULTS.codeServerExtensions.filter(e => e.checked).map(e => e.id),
     customExtensions: '',
@@ -56,7 +57,7 @@ function appState() {
     init() {
       this.applyPreset('default');
       const watched = [
-        'region', 'codeServer', 'extensions', 'customExtensions',
+        'region', 'deployPlatform', 'codeServer', 'extensions', 'customExtensions',
         'languages', 'languageVersions', 'pythonVenv',
         'aiTools', 'aiToolVersions', 'claudeMcpServers',
         'claudeWorkflows', 'claudeOutputStyle', 'claudeDisableTelemetry',
@@ -225,18 +226,31 @@ function appState() {
     /** 调用生成器，刷新语法高亮 */
     generate() {
       const config = this.getConfig();
+      // 所有平台都生成 Dockerfile 和 entrypoint.sh
       this.generatedDockerfile = generateDockerfile(config);
       this.generatedEntrypoint = generateEntrypoint(config);
-      this.generatedCompose = generateCompose(config);
-      this.generatedDeploy = generateDeploy(config);
-      this.generatedCnbYml = generateCnbYml(config);
+
+      // 根据部署平台生成不同文件
+      switch (this.deployPlatform) {
+        case 'cnb': // CNB 云平台
+          this.generatedCompose = '';
+          this.generatedDeploy = '';
+          this.generatedCnbYml = generateCnbYml(config);
+          break;
+        case 'local': // 本机/Docker
+        default:
+          this.generatedCompose = generateCompose(config);
+          this.generatedDeploy = generateDeploy(config);
+          this.generatedCnbYml = '';
+          break;
+      }
       this.$nextTick(() => highlightAll());
     },
 
     /** 收集当前 UI 状态为生成器配置对象 */
     getConfig() {
       return {
-        region: this.region, baseImage: DEFAULTS.baseImage,
+        region: this.region, deployPlatform: this.deployPlatform, baseImage: DEFAULTS.baseImage,
         codeServer: this.codeServer, extensions: this.extensions, customExtensions: this.customExtensions,
         languages: this.languages, languageVersions: this.languageVersions, pythonVenv: this.pythonVenv,
         aiTools: this.aiTools, aiToolVersions: this.aiToolVersions, claudeMcpServers: this.claudeMcpServers,
@@ -276,13 +290,24 @@ function appState() {
     downloadFile(filename, content) { downloadSingleFile(filename, content); },
 
     async downloadAllZip() {
-      await downloadAllAsZip({
+      // 所有平台都包含的基础文件
+      const files = {
         'Dockerfile': this.generatedDockerfile,
         'entrypoint.sh': this.generatedEntrypoint,
-        'docker-compose.yml': this.generatedCompose,
-        'deploy.sh': this.generatedDeploy,
-        '.cnb.yml': this.generatedCnbYml,
-      });
+      };
+
+      // 根据部署平台添加不同文件
+      switch (this.deployPlatform) {
+        case 'cnb': // CNB 云平台
+          files['.cnb.yml'] = this.generatedCnbYml;
+          break;
+        case 'local': // 本机/Docker
+        default:
+          files['docker-compose.yml'] = this.generatedCompose;
+          files['deploy.sh'] = this.generatedDeploy;
+          break;
+      }
+      await downloadAllAsZip(files);
     },
   };
 }

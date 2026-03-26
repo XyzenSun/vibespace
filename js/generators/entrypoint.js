@@ -21,6 +21,47 @@ function generateEntrypoint(config) {
   lines.push('cp -an /root-defaults/root/. /root/ 2>/dev/null || true');
   lines.push('');
 
+  // CNB 持久化目录软连接
+  if (config.deployPlatform === 'cnb') {
+    const cnbBase = config.cnbProjectName ? `/root/.cnb/${config.cnbProjectName}` : '/root/.cnb/vibespace';
+    lines.push('# --- CNB 持久化目录软连接 ---');
+    lines.push('# CNB 会自动漫游 ~/.cnb 目录，把需要持久化的目录通过软连接指向这里');
+    lines.push('# 注意：~/.cnb 目录最大容量 100MB，只持久化必要的配置文件目录');
+    lines.push(`PERSIST_DIR="${cnbBase}"`);
+    lines.push('');
+    lines.push('# 需要持久化的目录数组（完整路径），按需添加更多目录');
+    lines.push('# 例如：/root/.config /root/.local/share 等');
+    lines.push('PERSIST_DIRS=("/root/.claude" "/root/.cc-switch" "/root/.local/share/code-server/User/globalStorage" "/root/.vscode-server/data/User/globalStorage")');
+    lines.push('');
+    lines.push('mkdir -p "$PERSIST_DIR"');
+    lines.push('');
+    lines.push('for source in "${PERSIST_DIRS[@]}"; do');
+    lines.push('    # source: 原始目录路径（如 /root/.claude）');
+    lines.push('    # 目录不存在则跳过（工具首次运行创建目录后，下次启动会自动持久化）');
+    lines.push('    if [ ! -d "$source" ]; then');
+    lines.push('        echo "[CNB] 跳过不存在的目录: $source"');
+    lines.push('        continue');
+    lines.push('    fi');
+    lines.push('');
+    lines.push('    # target: 持久化目标目录（保留原路径结构）');
+    lines.push('    # 如 /root/.claude → /root/.cnb/vibespace/root/.claude');
+    lines.push('    target="${PERSIST_DIR}${source}"');
+    lines.push('');
+    lines.push('    # 如果持久化目标目录不存在（首次启动），把原始目录内容复制过去');
+    lines.push('    if [ ! -d "$target" ]; then');
+    lines.push('        echo "[CNB] 首次持久化: $source -> $target"');
+    lines.push('        mkdir -p "$target"');
+    lines.push('        cp -a "$source/." "$target/"');
+    lines.push('    fi');
+    lines.push('');
+    lines.push('    # 删除原始目录，建立软连接指向持久化目标目录');
+    lines.push('    rm -rf "$source"');
+    lines.push('    ln -sfn "$target" "$source"');
+    lines.push('    echo "[CNB] 已建立软连接: $source -> $target"');
+    lines.push('done');
+    lines.push('');
+  }
+
   // Git
   lines.push('# --- Git ---');
   lines.push('if [ -n "$GIT_USER_NAME" ]; then');

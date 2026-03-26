@@ -114,12 +114,14 @@
     <!-- 右侧内容 -->
     <main class="flex-1 p-6 overflow-y-auto" style="max-height: calc(100vh - 60px);">
 
-      <!-- 步骤 1: 地区 -->
+      <!-- 步骤 1: 宿主机环境 -->
       <div x-show="currentStep === 1" x-transition class="fade-in">
-        <h2 class="text-xl font-bold mb-2">🌏 宿主机地区</h2>
-        <p class="text-gray-500 text-sm mb-6">选择服务器所在地区，将据此配置镜像源和网络设置</p>
+        <h2 class="text-xl font-bold mb-2">🌏 宿主机环境</h2>
+        <p class="text-gray-500 text-sm mb-6">选择服务器所在地区和部署环境，将据此配置镜像源和网络设置</p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+        <!-- 地区选择 -->
+        <h3 class="text-sm font-medium text-gray-300 mb-3">宿主机所处地区</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mb-6">
           <!-- 中国 -->
           <button
             @click="region = 'china'"
@@ -144,7 +146,7 @@
         </div>
 
         <!-- 镜像源提示 -->
-        <div x-show="region === 'china'" x-transition class="mt-4 max-w-2xl">
+        <div x-show="region === 'china'" x-transition class="mb-6 max-w-2xl">
           <div class="bg-blue-950/30 border border-blue-800/50 rounded-lg p-4">
             <h4 class="text-sm font-medium text-blue-400 mb-2">将自动配置以下镜像源</h4>
             <div class="grid grid-cols-2 gap-2 text-xs text-blue-300">
@@ -157,6 +159,19 @@
               <div class="badge badge-blue">codeServer: 使用镜像安装脚本</div>
             </div>
           </div>
+        </div>
+
+        <!-- 部署环境选择（下拉框） -->
+        <div class="max-w-md mb-6">
+          <label class="text-sm font-medium text-gray-300 mb-2 block">部署环境</label>
+          <select
+            x-model="deployPlatform"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm text-gray-300 focus:border-blue-500 outline-none cursor-pointer"
+          >
+            <option value="local">本机 / Docker (Docker Compose 部署)</option>
+            <option value="cnb">CNB 云平台 (云原生开发环境)</option>
+          </select>
+          <p class="text-xs text-gray-600 mt-2" x-text="deployPlatform === 'cnb' ? '将生成 .cnb.yml 配置文件，并自动配置数据持久化软连接' : '标准 Docker 部署，生成 docker-compose.yml 和 deploy.sh'"></p>
         </div>
 
         <!-- 导航 -->
@@ -667,17 +682,17 @@
             </div>
           </div>
 
-          <!-- CNB 项目名称 -->
-          <div class="border border-gray-700 rounded-xl p-4">
+          <!-- CNB 项目名称 (仅 CNB 环境显示) -->
+          <div x-show="deployPlatform === 'cnb'" x-transition class="border border-gray-700 rounded-xl p-4">
             <h3 class="font-bold text-sm mb-2">CNB 项目名称 <span class="text-gray-600 font-normal">(可选)</span></h3>
-            <p class="text-gray-500 text-xs mb-3">用于 CNB 云平台的数据隔离。留空则同账号下所有仓库共享 <code class="text-gray-400">/root/.cnb/</code> 目录</p>
+            <p class="text-gray-500 text-xs mb-3">用于 CNB 云平台的数据隔离。留空则使用默认路径 <code class="text-gray-400">/root/.cnb/vibespace/</code></p>
             <input
               type="text"
               x-model="cnbProjectName"
               placeholder="例如: my-project"
               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none"
             >
-            <p class="text-gray-600 text-xs mt-2">填写后将使用 <code class="text-gray-400">/root/.cnb/[项目名称]/</code> 存储数据，避免不同项目间数据混乱，如不隔离，则您的两个CNB开发环境A和B的root目录中的配置文件将一致，好处是不必重复配置，坏处是数据较为混乱，请根据情况选择</p>
+            <p class="text-gray-600 text-xs mt-2">填写后将使用 <code class="text-gray-400">/root/.cnb/[项目名称]/</code> 存储数据，避免不同项目间数据混乱</p>
           </div>
 
           <!-- 挂载方式 -->
@@ -771,7 +786,7 @@ ENV MY_APP_ENV=production</code></pre>
         </div>
 
         <!-- 快速部署命令 -->
-        <div class="bg-gray-900 border border-gray-800 rounded-lg p-3 mb-4">
+        <div x-show="deployPlatform === 'local'" class="bg-gray-900 border border-gray-800 rounded-lg p-3 mb-4">
           <p class="text-xs text-gray-400 mb-2">下载后在服务器上执行：</p>
           <div class="flex items-center gap-2">
             <code class="flex-1 bg-gray-800 text-green-400 text-xs px-3 py-2 rounded font-mono select-all">unzip devbox-config.zip -d devbox &amp;&amp; cd devbox &amp;&amp; chmod +x deploy.sh entrypoint.sh &amp;&amp; ./deploy.sh</code>
@@ -783,6 +798,12 @@ ENV MY_APP_ENV=production</code></pre>
           </div>
         </div>
 
+        <!-- CNB 部署说明 -->
+        <div x-show="deployPlatform === 'cnb'" class="bg-gray-900 border border-gray-800 rounded-lg p-3 mb-4">
+          <p class="text-xs text-gray-400 mb-2">部署方法：</p>
+          <p class="text-sm text-green-400">将生成的 <span class="text-yellow-400">Dockerfile</span>、<span class="text-yellow-400">entrypoint.sh</span>、<span class="text-yellow-400">.cnb.yml</span> 上传到仓库根目录，点击<strong class="text-white">云原生开发</strong>即可</p>
+        </div>
+
         <!-- 标签页 -->
         <div class="flex border-b border-gray-700 mb-4">
           <button
@@ -791,6 +812,7 @@ ENV MY_APP_ENV=production</code></pre>
             class="tab-btn px-4 py-2 text-sm text-gray-400 hover:text-white border-b-2 border-transparent"
           >Dockerfile</button>
           <button
+            x-show="deployPlatform === 'local'"
             @click="outputTab = 'compose'"
             :class="outputTab === 'compose' ? 'active' : ''"
             class="tab-btn px-4 py-2 text-sm text-gray-400 hover:text-white border-b-2 border-transparent"
@@ -801,11 +823,13 @@ ENV MY_APP_ENV=production</code></pre>
             class="tab-btn px-4 py-2 text-sm text-gray-400 hover:text-white border-b-2 border-transparent"
           >entrypoint.sh</button>
           <button
+            x-show="deployPlatform === 'local'"
             @click="outputTab = 'deploy'"
             :class="outputTab === 'deploy' ? 'active' : ''"
             class="tab-btn px-4 py-2 text-sm text-gray-400 hover:text-white border-b-2 border-transparent"
           >deploy.sh</button>
           <button
+            x-show="deployPlatform === 'cnb'"
             @click="outputTab = 'cnb'"
             :class="outputTab === 'cnb' ? 'active' : ''"
             class="tab-btn px-4 py-2 text-sm text-gray-400 hover:text-white border-b-2 border-transparent"
@@ -840,6 +864,12 @@ ENV MY_APP_ENV=production</code></pre>
             <button id="copy-entrypoint" @click="copyToClipboard(generatedEntrypoint, 'copy-entrypoint')" class="copy-btn text-xs text-gray-400 hover:text-white px-3 py-1 bg-gray-800 rounded">复制</button>
             <button @click="downloadFile('entrypoint.sh', generatedEntrypoint)" class="text-xs text-gray-400 hover:text-white px-3 py-1 bg-gray-800 rounded">下载</button>
           </div>
+          <div x-show="deployPlatform === 'cnb'" class="bg-yellow-950/30 border border-yellow-800/50 rounded-lg p-3 mb-3">
+            <p class="text-yellow-300 text-xs flex items-start gap-1">
+              <span class="mt-0.5">⚠️</span>
+              <span><strong>CNB 持久化配置：</strong>请查看脚本中「CNB 持久化目录软连接」部分的注释。<br>• 只持久化必要的配置文件目录<br>• <code class="bg-yellow-900/50 px-1 rounded">~/.cnb</code> 目录最大容量为 <strong>100MB</strong>，超出会导致持久化失败</span>
+            </p>
+          </div>
           <div class="code-preview bg-gray-900 rounded-lg border border-gray-800 overflow-auto">
             <pre><code class="language-bash" x-text="generatedEntrypoint"></code></pre>
           </div>
@@ -856,8 +886,8 @@ ENV MY_APP_ENV=production</code></pre>
           </div>
         </div>
 
-        <!-- .cnb.yml -->
-        <div x-show="outputTab === 'cnb'">
+        <!-- .cnb.yml (仅 CNB 环境) -->
+        <div x-show="outputTab === 'cnb' && deployPlatform === 'cnb'">
           <div class="flex justify-end gap-2 mb-2">
             <button id="copy-cnb" @click="copyToClipboard(generatedCnbYml, 'copy-cnb')" class="copy-btn text-xs text-gray-400 hover:text-white px-3 py-1 bg-gray-800 rounded">复制</button>
             <button @click="downloadFile('.cnb.yml', generatedCnbYml)" class="text-xs text-gray-400 hover:text-white px-3 py-1 bg-gray-800 rounded">下载</button>

@@ -186,6 +186,11 @@ function generateDockerfile(config) {
       const url = isChina ? DEFAULTS.ccSwitch.mirrorUrl : DEFAULTS.ccSwitch.url;
       cmds.push(`CC_SWITCH_FORCE=1 curl -fsSL ${url} | bash`);
     }
+    // Vibe 快捷命令（创建脚本方式，比 alias 更可靠）
+    if (config.vibeCommand && config.vibeCommandText) {
+      const vibeCmd = config.vibeCommandText.replace(/'/g, "'\\''");
+      cmds.push(`echo '#!/bin/bash' > /usr/local/bin/vibe`, `echo '${vibeCmd} "\$@"' >> /usr/local/bin/vibe`, 'chmod +x /usr/local/bin/vibe');
+    }
     if (cmds.length) {
       lines.push('# 层6: AI 工具');
       lines.push('RUN ' + cmds.join(' \\\n    && '));

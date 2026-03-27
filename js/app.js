@@ -39,7 +39,6 @@ function appState() {
     sshPublicKey: '',
     cfTunnel: false,
     cfToken: '',
-    cnbProjectName: '',  // CNB 项目名称（可选），用于数据隔离。留空则同账号下所有仓库共享数据
     vibeCommand: false,
     vibeCommandText: DEFAULTS.vibeDefaultCommand,
     volumeMode: 'named',
@@ -63,7 +62,7 @@ function appState() {
         'claudeWorkflows', 'claudeOutputStyle', 'claudeDisableTelemetry',
         'gitUserName', 'gitUserEmail',
         'rootPassword', 'csPassword', 'sshPrivateKey', 'sshPublicKey',
-        'cfTunnel', 'cfToken', 'cnbProjectName', 'vibeCommand', 'vibeCommandText',
+        'cfTunnel', 'cfToken', 'vibeCommand', 'vibeCommandText',
         'volumeMode', 'customDockerfile',
       ];
       watched.forEach(key => this.$watch(key, () => this.generate()));
@@ -215,7 +214,6 @@ function appState() {
       this.sshPublicKey = p.sshPublicKey || '';
       this.cfTunnel = p.cfTunnel;
       this.cfToken = p.cfToken;
-      this.cnbProjectName = p.cnbProjectName || '';
       this.vibeCommand = p.vibeCommand;
       this.vibeCommandText = p.vibeCommandText;
       this.volumeMode = p.volumeMode || 'named';
@@ -259,7 +257,7 @@ function appState() {
         gitUserName: this.gitUserName, gitUserEmail: this.gitUserEmail,
         rootPassword: this.rootPassword, csPassword: this.csPassword,
         sshPrivateKey: this.sshPrivateKey, sshPublicKey: this.sshPublicKey,
-        cfTunnel: this.cfTunnel, cfToken: this.cfToken, cnbProjectName: this.cnbProjectName,
+        cfTunnel: this.cfTunnel, cfToken: this.cfToken,
         vibeCommand: this.vibeCommand, vibeCommandText: this.vibeCommandText,
         volumeMode: this.volumeMode,
         customDockerfile: this.customDockerfile,

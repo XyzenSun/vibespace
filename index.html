@@ -171,7 +171,7 @@
             <option value="local">本机 / Docker (Docker Compose 部署)</option>
             <option value="cnb">CNB 云平台 (云原生开发环境)</option>
           </select>
-          <p class="text-xs text-gray-600 mt-2" x-text="deployPlatform === 'cnb' ? '将生成 .cnb.yml 配置文件，并自动配置数据持久化软连接' : '标准 Docker 部署，生成 docker-compose.yml 和 deploy.sh'"></p>
+          <p class="text-xs text-gray-600 mt-2" x-text="deployPlatform === 'cnb' ? '将生成 .cnb.yml 配置文件' : '标准 Docker 部署，生成 docker-compose.yml 和 deploy.sh'"></p>
         </div>
 
         <!-- 导航 -->
@@ -682,19 +682,6 @@
             </div>
           </div>
 
-          <!-- CNB 项目名称 (仅 CNB 环境显示) -->
-          <div x-show="deployPlatform === 'cnb'" x-transition class="border border-gray-700 rounded-xl p-4">
-            <h3 class="font-bold text-sm mb-2">CNB 项目名称 <span class="text-gray-600 font-normal">(可选)</span></h3>
-            <p class="text-gray-500 text-xs mb-3">用于 CNB 云平台的数据隔离。留空则使用默认路径 <code class="text-gray-400">/root/.cnb/vibespace/</code></p>
-            <input
-              type="text"
-              x-model="cnbProjectName"
-              placeholder="例如: my-project"
-              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none"
-            >
-            <p class="text-gray-600 text-xs mt-2">填写后将使用 <code class="text-gray-400">/root/.cnb/[项目名称]/</code> 存储数据，避免不同项目间数据混乱</p>
-          </div>
-
           <!-- 挂载方式 -->
           <div class="border border-gray-700 rounded-xl p-4">
             <h3 class="font-bold text-sm mb-2">数据持久化方式</h3>
@@ -865,9 +852,9 @@ ENV MY_APP_ENV=production</code></pre>
             <button @click="downloadFile('entrypoint.sh', generatedEntrypoint)" class="text-xs text-gray-400 hover:text-white px-3 py-1 bg-gray-800 rounded">下载</button>
           </div>
           <div x-show="deployPlatform === 'cnb'" class="bg-yellow-950/30 border border-yellow-800/50 rounded-lg p-3 mb-3">
-            <p class="text-yellow-300 text-xs flex items-start gap-1">
-              <span class="mt-0.5">⚠️</span>
-              <span><strong>CNB 持久化配置：</strong>请查看脚本中「CNB 持久化目录软连接」部分的注释。<br>• 只持久化必要的配置文件目录<br>• <code class="bg-yellow-900/50 px-1 rounded">~/.cnb</code> 目录最大容量为 <strong>100MB</strong>，超出会导致持久化失败</span>
+            <p class="text-yellow-300 text-xs flex items-center gap-1">
+              <span>⚠️</span>
+              <span><strong>CNB 持久化配置：</strong></span>
             </p>
           </div>
           <div class="code-preview bg-gray-900 rounded-lg border border-gray-800 overflow-auto">
@@ -891,9 +878,6 @@ ENV MY_APP_ENV=production</code></pre>
           <div class="flex justify-end gap-2 mb-2">
             <button id="copy-cnb" @click="copyToClipboard(generatedCnbYml, 'copy-cnb')" class="copy-btn text-xs text-gray-400 hover:text-white px-3 py-1 bg-gray-800 rounded">复制</button>
             <button @click="downloadFile('.cnb.yml', generatedCnbYml)" class="text-xs text-gray-400 hover:text-white px-3 py-1 bg-gray-800 rounded">下载</button>
-          </div>
-          <div class="bg-yellow-950/30 border border-yellow-800/50 rounded-lg p-3 mb-3">
-            <p class="text-yellow-300 text-xs flex items-center gap-1"><span>⚠️</span>部署方法：将生成的Dockerfile，entrypoint.sh，.cnb.yml 上传到仓库根目录，点击云原生开发即可 </p>
           </div>
           <div class="code-preview bg-gray-900 rounded-lg border border-gray-800 overflow-auto">
             <pre><code class="language-yaml" x-text="generatedCnbYml"></code></pre>

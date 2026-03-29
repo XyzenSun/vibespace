@@ -41,7 +41,7 @@ function generateDockerfile(config) {
   if (isChina) layer1.push(mirrors.aptScript);
   layer1.push('apt-get update');
 
-  const aptPkgs = new Set(['git', 'wget', 'unzip', 'curl', 'ca-certificates', 'openssh-server', 'openssh-client', 'vim', 'nano']);
+  const aptPkgs = new Set(['git', 'wget', 'unzip', 'curl', 'ca-certificates', 'openssh-server', 'openssh-client', 'vim', 'nano', 'rclone', 'zstd', 'cron']);
   config.languages.forEach(langId => {
     const lang = DEFAULTS.languages.find(l => l.id === langId);
     if (!lang) return;

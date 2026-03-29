@@ -120,6 +120,27 @@ const DEFAULTS = {
       name: 'mcp-deepwiki',
       json: '{"command":"npx","args":["-y","mcp-deepwiki@latest"]}',
     },
+    {
+      id: 'filesystem',
+      label: 'Filesystem',
+      desc: '安全的读取文件',
+      name: 'filesystem',
+      json: '{"command":"npx","args":["-y","@modelcontextprotocol/server-filesystem"]}',
+    },
+    {
+      id: 'exa',
+      label: 'exa',
+      desc: '高效的AI搜索服务，需要提供APIKEY',
+      name: 'exa',
+      json: '{"type":"http","url":"https://mcp.exa.ai/mcp?exaApiKey=[你的APIKEY]"}',
+    },
+    {
+      id: 'firecrawl',
+      label: 'firecrawl',
+      desc: '网页爬取工具，需要提供APIKEY',
+      name: 'firecrawl',
+      json: '{"type":"http","url":"https://mcp.firecrawl.dev/[你的apikey]/v2/mcp"}',
+    },
   ],
 
   /* Claude Code 工作流预设

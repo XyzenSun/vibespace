@@ -171,7 +171,7 @@
             <option value="local">本机 / Docker (Docker Compose 部署)</option>
             <option value="cnb">CNB 云平台 (云原生开发环境)</option>
           </select>
-          <p class="text-xs text-gray-600 mt-2" x-text="deployPlatform === 'cnb' ? '将生成 .cnb.yml 配置文件，并自动配置数据持久化软连接' : '标准 Docker 部署，生成 docker-compose.yml 和 deploy.sh'"></p>
+          <p class="text-xs text-gray-600 mt-2" x-text="deployPlatform === 'cnb' ? '将生成 .cnb.yml 配置文件' : '标准 Docker 部署，生成 docker-compose.yml 和 deploy.sh'"></p>
         </div>
 
         <!-- 导航 -->
@@ -682,21 +682,8 @@
             </div>
           </div>
 
-          <!-- CNB 项目名称 (仅 CNB 环境显示) -->
-          <div x-show="deployPlatform === 'cnb'" x-transition class="border border-gray-700 rounded-xl p-4">
-            <h3 class="font-bold text-sm mb-2">CNB 项目名称 <span class="text-gray-600 font-normal">(可选)</span></h3>
-            <p class="text-gray-500 text-xs mb-3">用于 CNB 云平台的数据隔离。留空则使用默认路径 <code class="text-gray-400">/root/.cnb/vibespace/</code></p>
-            <input
-              type="text"
-              x-model="cnbProjectName"
-              placeholder="例如: my-project"
-              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none"
-            >
-            <p class="text-gray-600 text-xs mt-2">填写后将使用 <code class="text-gray-400">/root/.cnb/[项目名称]/</code> 存储数据，避免不同项目间数据混乱</p>
-          </div>
-
-          <!-- 挂载方式 -->
-          <div class="border border-gray-700 rounded-xl p-4">
+          <!-- 数据持久化方式 (本机部署) -->
+          <div x-show="deployPlatform === 'local'" class="border border-gray-700 rounded-xl p-4">
             <h3 class="font-bold text-sm mb-2">数据持久化方式</h3>
             <p class="text-gray-500 text-xs mb-3">选择 docker-compose 中 /workspace 和 /root 的挂载方式</p>
             <div class="grid grid-cols-2 gap-3">
@@ -716,6 +703,121 @@
                 <h4 class="text-sm font-bold mb-1">目录挂载</h4>
                 <p class="text-gray-500 text-xs">映射到 ./workspace 和 ./root-data，方便直接访问</p>
               </button>
+            </div>
+          </div>
+
+          <!-- OSS 对象存储持久化 (CNB 平台) -->
+          <div x-show="deployPlatform === 'cnb'" class="border border-gray-700 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="font-bold text-sm">对象存储持久化</h3>
+                <p class="text-gray-500 text-xs mt-0.5">通过 S3 兼容的对象存储实现数据持久化，支持阿里云 OSS、AWS S3、MinIO 等</p>
+              </div>
+              <button
+                @click="ossEnabled = !ossEnabled"
+                :class="ossEnabled ? 'active' : ''"
+                class="toggle-switch relative w-12 h-6 rounded-full bg-gray-700 cursor-pointer flex-shrink-0"
+              >
+                <span class="toggle-dot absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow"></span>
+              </button>
+            </div>
+
+            <div :class="ossEnabled ? 'open' : ''" class="expand-content">
+              <!-- OSS 配置表单 -->
+              <div class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs text-gray-400 block mb-1">OSS_ENDPOINT <span class="text-gray-600">(S3 endpoint)</span></label>
+                    <input
+                      type="text"
+                      x-model="ossEndpoint"
+                      placeholder="https://oss-cn-beijing.aliyuncs.com"
+                      class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none"
+                    >
+                  </div>
+                  <div>
+                    <label class="text-xs text-gray-400 block mb-1">OSS_BUCKET <span class="text-gray-600">(桶名)</span></label>
+                    <input
+                      type="text"
+                      x-model="ossBucket"
+                      placeholder="my-bucket"
+                      class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none"
+                    >
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs text-gray-400 block mb-1">OSS_ACCESS_KEY <span class="text-gray-600">(Access Key ID)</span></label>
+                    <input
+                      type="text"
+                      x-model="ossAccessKey"
+                      placeholder="通过环境变量传入"
+                      class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none"
+                    >
+                  </div>
+                  <div>
+                    <label class="text-xs text-gray-400 block mb-1">OSS_SECRET_KEY <span class="text-gray-600">(Secret Access Key)</span></label>
+                    <input
+                      type="password"
+                      x-model="ossSecretKey"
+                      placeholder="通过环境变量传入"
+                      class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none"
+                    >
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs text-gray-400 block mb-1">OSS_REGION <span class="text-gray-600">(区域，默认 auto)</span></label>
+                    <input
+                      type="text"
+                      x-model="ossRegion"
+                      placeholder="auto"
+                      class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none"
+                    >
+                  </div>
+                  <div>
+                    <label class="text-xs text-gray-400 block mb-1">OSS_PROJECT <span class="text-gray-600">(项目名前缀)</span></label>
+                    <input
+                      type="text"
+                      x-model="ossProject"
+                      placeholder="devbox"
+                      class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none"
+                    >
+                  </div>
+                </div>
+                <div>
+                  <label class="text-xs text-gray-400 block mb-1">OSS_PATHS <span class="text-gray-600">(持久化目录，冒号分隔)</span></label>
+                  <input
+                    type="text"
+                    x-model="ossPaths"
+                    placeholder="/root/.claude:/root/.cc-switch:/root/.local/share/code-server/User/globalStorage"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none font-mono"
+                  >
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs text-gray-400 block mb-1">OSS_KEEP_COUNT <span class="text-gray-600">(保留快照数)</span></label>
+                    <input
+                      type="number"
+                      x-model="ossKeepCount"
+                      min="1"
+                      max="20"
+                      class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none"
+                    >
+                  </div>
+                  <div>
+                    <label class="text-xs text-gray-400 block mb-1">OSS_SYNC_INTERVAL <span class="text-gray-600">(同步间隔分钟)</span></label>
+                    <input
+                      type="number"
+                      x-model="ossSyncInterval"
+                      min="1"
+                      max="1440"
+                      class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none"
+                    >
+                  </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">敏感信息建议通过环境变量传入，此处配置将写入 .cnb.yml</p>
+              </div>
             </div>
           </div>
         </div>
@@ -865,9 +967,9 @@ ENV MY_APP_ENV=production</code></pre>
             <button @click="downloadFile('entrypoint.sh', generatedEntrypoint)" class="text-xs text-gray-400 hover:text-white px-3 py-1 bg-gray-800 rounded">下载</button>
           </div>
           <div x-show="deployPlatform === 'cnb'" class="bg-yellow-950/30 border border-yellow-800/50 rounded-lg p-3 mb-3">
-            <p class="text-yellow-300 text-xs flex items-start gap-1">
-              <span class="mt-0.5">⚠️</span>
-              <span><strong>CNB 持久化配置：</strong>请查看脚本中「CNB 持久化目录软连接」部分的注释。<br>• 只持久化必要的配置文件目录<br>• <code class="bg-yellow-900/50 px-1 rounded">~/.cnb</code> 目录最大容量为 <strong>100MB</strong>，超出会导致持久化失败</span>
+            <p class="text-yellow-300 text-xs flex items-center gap-1">
+              <span>⚠️</span>
+              <span><strong>CNB 持久化配置：</strong></span>
             </p>
           </div>
           <div class="code-preview bg-gray-900 rounded-lg border border-gray-800 overflow-auto">
@@ -891,9 +993,6 @@ ENV MY_APP_ENV=production</code></pre>
           <div class="flex justify-end gap-2 mb-2">
             <button id="copy-cnb" @click="copyToClipboard(generatedCnbYml, 'copy-cnb')" class="copy-btn text-xs text-gray-400 hover:text-white px-3 py-1 bg-gray-800 rounded">复制</button>
             <button @click="downloadFile('.cnb.yml', generatedCnbYml)" class="text-xs text-gray-400 hover:text-white px-3 py-1 bg-gray-800 rounded">下载</button>
-          </div>
-          <div class="bg-yellow-950/30 border border-yellow-800/50 rounded-lg p-3 mb-3">
-            <p class="text-yellow-300 text-xs flex items-center gap-1"><span>⚠️</span>部署方法：将生成的Dockerfile，entrypoint.sh，.cnb.yml 上传到仓库根目录，点击云原生开发即可 </p>
           </div>
           <div class="code-preview bg-gray-900 rounded-lg border border-gray-800 overflow-auto">
             <pre><code class="language-yaml" x-text="generatedCnbYml"></code></pre>

@@ -39,12 +39,23 @@ function appState() {
     sshPublicKey: '',
     cfTunnel: false,
     cfToken: '',
-    cnbProjectName: '',  // CNB 项目名称（可选），用于数据隔离。留空则同账号下所有仓库共享数据
     vibeCommand: false,
     vibeCommandText: DEFAULTS.vibeDefaultCommand,
     volumeMode: 'named',
     customDockerfile: '',
     currentPreset: '',
+
+    /* OSS 对象存储持久化配置 (仅 CNB 平台) */
+    ossEnabled: true,  // 默认启用
+    ossEndpoint: '',
+    ossAccessKey: '',
+    ossSecretKey: '',
+    ossBucket: '',
+    ossRegion: 'auto',
+    ossProject: 'devbox',
+    ossPaths: '/root/.claude:/root/.cc-switch:/root/.local/share/code-server/User/globalStorage:/root/.vscode-server/data/User/globalStorage',
+    ossKeepCount: 5,
+    ossSyncInterval: 5,
 
     /* 生成结果 */
     generatedDockerfile: '',
@@ -63,8 +74,10 @@ function appState() {
         'claudeWorkflows', 'claudeOutputStyle', 'claudeDisableTelemetry',
         'gitUserName', 'gitUserEmail',
         'rootPassword', 'csPassword', 'sshPrivateKey', 'sshPublicKey',
-        'cfTunnel', 'cfToken', 'cnbProjectName', 'vibeCommand', 'vibeCommandText',
+        'cfTunnel', 'cfToken', 'vibeCommand', 'vibeCommandText',
         'volumeMode', 'customDockerfile',
+        'ossEnabled', 'ossEndpoint', 'ossAccessKey', 'ossSecretKey', 'ossBucket',
+        'ossRegion', 'ossProject', 'ossPaths', 'ossKeepCount', 'ossSyncInterval',
       ];
       watched.forEach(key => this.$watch(key, () => this.generate()));
     },
@@ -215,7 +228,6 @@ function appState() {
       this.sshPublicKey = p.sshPublicKey || '';
       this.cfTunnel = p.cfTunnel;
       this.cfToken = p.cfToken;
-      this.cnbProjectName = p.cnbProjectName || '';
       this.vibeCommand = p.vibeCommand;
       this.vibeCommandText = p.vibeCommandText;
       this.volumeMode = p.volumeMode || 'named';
@@ -259,11 +271,22 @@ function appState() {
         gitUserName: this.gitUserName, gitUserEmail: this.gitUserEmail,
         rootPassword: this.rootPassword, csPassword: this.csPassword,
         sshPrivateKey: this.sshPrivateKey, sshPublicKey: this.sshPublicKey,
-        cfTunnel: this.cfTunnel, cfToken: this.cfToken, cnbProjectName: this.cnbProjectName,
+        cfTunnel: this.cfTunnel, cfToken: this.cfToken,
         vibeCommand: this.vibeCommand, vibeCommandText: this.vibeCommandText,
         volumeMode: this.volumeMode,
         customDockerfile: this.customDockerfile,
         needsNodejs: this.needsNodejs(),
+        // OSS 对象存储配置
+        ossEnabled: this.ossEnabled,
+        ossEndpoint: this.ossEndpoint,
+        ossAccessKey: this.ossAccessKey,
+        ossSecretKey: this.ossSecretKey,
+        ossBucket: this.ossBucket,
+        ossRegion: this.ossRegion,
+        ossProject: this.ossProject,
+        ossPaths: this.ossPaths,
+        ossKeepCount: this.ossKeepCount,
+        ossSyncInterval: this.ossSyncInterval,
       };
     },
 

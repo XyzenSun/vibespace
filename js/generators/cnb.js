@@ -38,6 +38,37 @@ function generateCnbYml(config) {
     lines.push('        CF_TUNNEL_TOKEN: ' + (config.cfToken || ''));
   }
 
+  // OSS 对象存储持久化配置
+  if (config.ossEnabled) {
+    lines.push('        # ===== 对象存储持久化配置 =====');
+    lines.push('        OSS_ENABLED: "true"');
+    if (config.ossEndpoint) {
+      lines.push(`        OSS_ENDPOINT: ${config.ossEndpoint}`);
+    } else {
+      lines.push('        OSS_ENDPOINT: # 请填入 S3 endpoint，如 https://oss-cn-beijing.aliyuncs.com');
+    }
+    if (config.ossAccessKey) {
+      lines.push(`        OSS_ACCESS_KEY: ${config.ossAccessKey}`);
+    } else {
+      lines.push('        OSS_ACCESS_KEY: # 请填入 Access Key ID');
+    }
+    if (config.ossSecretKey) {
+      lines.push(`        OSS_SECRET_KEY: ${config.ossSecretKey}`);
+    } else {
+      lines.push('        OSS_SECRET_KEY: # 请填入 Secret Access Key');
+    }
+    if (config.ossBucket) {
+      lines.push(`        OSS_BUCKET: ${config.ossBucket}`);
+    } else {
+      lines.push('        OSS_BUCKET: # 请填入桶名');
+    }
+    lines.push(`        OSS_REGION: ${config.ossRegion || 'auto'}`);
+    lines.push(`        OSS_PROJECT: ${config.ossProject || 'devbox'}`);
+    lines.push(`        OSS_PATHS: "${config.ossPaths || '/root/.claude:/root/.cc-switch:/root/.local/share/code-server/User/globalStorage'}"`);
+    lines.push(`        OSS_KEEP_COUNT: "${config.ossKeepCount || 5}"`);
+    lines.push(`        OSS_SYNC_INTERVAL: "${config.ossSyncInterval || 5}"`);
+  }
+
   // services
   lines.push('      services:');
   lines.push('        - docker');

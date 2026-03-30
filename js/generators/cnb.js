@@ -16,55 +16,46 @@ function generateCnbYml(config) {
 
   // 环境变量 — CNB 使用 env 而非 environment
   lines.push('      env:');
-  if (config.rootPassword) {
-    lines.push(`        ROOT_PASSWORD: ${config.rootPassword}`);
-  } else {
-    lines.push('        ROOT_PASSWORD: root123');
-  }
-  lines.push('        GIT_USER_NAME: ' + (config.gitUserName || ''));
-  lines.push('        GIT_USER_EMAIL: ' + (config.gitUserEmail || ''));
-  if (config.sshPrivateKey) {
-    const escaped = config.sshPrivateKey.replace(/\n/g, '\\n');
-    lines.push(`        SSH_PRIVATE_KEY: "${escaped}"`);
-  }
+  lines.push(`        ROOT_PASSWORD: "${config.rootPassword || 'root123'}"`);
+  lines.push(`        GIT_USER_NAME: "${config.gitUserName || ''}"`);
+  lines.push(`        GIT_USER_EMAIL: "${config.gitUserEmail || ''}"`);
   if (config.sshPublicKey) {
-    lines.push(`        SSH_PUBLIC_KEY: ${config.sshPublicKey}`);
+    lines.push(`        SSH_PUBLIC_KEY: "${config.sshPublicKey}"`);
   }
   if (config.codeServer && config.csPassword) {
-    lines.push(`        CS_PASSWORD: ${config.csPassword}`);
+    lines.push(`        CS_PASSWORD: "${config.csPassword}"`);
   }
   if (config.cfTunnel) {
     lines.push('        #请在此填入您的Cloudflare Tunnel Token');
-    lines.push('        CF_TUNNEL_TOKEN: ' + (config.cfToken || ''));
+    lines.push(`        CF_TUNNEL_TOKEN: "${config.cfToken || ''}"`);
+  }
+  if (config.frpcEnabled) {
+    lines.push('        #请在此填入您的frpc配置文件下载地址（需为直链）');
+    lines.push(`        FRPC_CONFIG_URL: "${config.frpcConfigUrl || ''}"`);
   }
 
   // OSS 对象存储持久化配置
   if (config.ossEnabled) {
     lines.push('        # ===== 对象存储持久化配置 =====');
     lines.push('        OSS_ENABLED: "true"');
-    if (config.ossEndpoint) {
-      lines.push(`        OSS_ENDPOINT: ${config.ossEndpoint}`);
-    } else {
-      lines.push('        OSS_ENDPOINT: # 请填入 S3 endpoint，如 https://oss-cn-beijing.aliyuncs.com');
-    }
-    if (config.ossAccessKey) {
-      lines.push(`        OSS_ACCESS_KEY: ${config.ossAccessKey}`);
-    } else {
-      lines.push('        OSS_ACCESS_KEY: # 请填入 Access Key ID');
-    }
-    if (config.ossSecretKey) {
-      lines.push(`        OSS_SECRET_KEY: ${config.ossSecretKey}`);
-    } else {
-      lines.push('        OSS_SECRET_KEY: # 请填入 Secret Access Key');
-    }
-    if (config.ossBucket) {
-      lines.push(`        OSS_BUCKET: ${config.ossBucket}`);
-    } else {
-      lines.push('        OSS_BUCKET: # 请填入桶名');
-    }
-    lines.push(`        OSS_REGION: ${config.ossRegion || 'auto'}`);
-    lines.push(`        OSS_PROJECT: ${config.ossProject || 'devbox'}`);
-    lines.push(`        OSS_PATHS: "${config.ossPaths || '/root/.claude:/root/.cc-switch:/root/.local/share/code-server/User/globalStorage'}"`);
+
+    // 将注释放在变量的上一行，并始终保留
+    lines.push('        # 请填入 S3 endpoint，如 https://oss-cn-beijing.aliyuncs.com');
+    lines.push(`        OSS_ENDPOINT: "${config.ossEndpoint || ''}"`);
+
+    lines.push('        # 请填入 Access Key ID');
+    lines.push(`        OSS_ACCESS_KEY: "${config.ossAccessKey || ''}"`);
+
+    lines.push('        # 请填入 Secret Access Key');
+    lines.push(`        OSS_SECRET_KEY: "${config.ossSecretKey || ''}"`);
+
+    lines.push('        # 请填入桶名');
+    lines.push(`        OSS_BUCKET: "${config.ossBucket || ''}"`);
+
+    // 对于有默认值的配置，直接生成
+    lines.push(`        OSS_REGION: "${config.ossRegion || 'auto'}"`);
+    lines.push(`        OSS_PROJECT: "${config.ossProject || 'devbox'}"`);
+    lines.push(`        OSS_PATHS: "${config.ossPaths || '/root/.claude,/root/.cc-switch,/root/.local/share/code-server/User/globalStorage'}"`);
     lines.push(`        OSS_KEEP_COUNT: "${config.ossKeepCount || 5}"`);
     lines.push(`        OSS_SYNC_INTERVAL: "${config.ossSyncInterval || 5}"`);
   }
@@ -76,6 +67,11 @@ function generateCnbYml(config) {
   lines.push('          #这里为容器存活时间，当超过此时间且无操作，容器自动关闭，请根据需要自行修改');
   lines.push('          options:');
   lines.push('            keepAliveTimeout: 60m');
+
+  // stages - 新增部分
+  lines.push('      stages:');
+  lines.push('        - name: run entrypoint.sh');
+  lines.push('          script: chmod +x /usr/local/bin/entrypoint.sh && /usr/local/bin/entrypoint.sh');
 
   return lines.join('\n');
 }

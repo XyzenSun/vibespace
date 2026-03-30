@@ -13,7 +13,7 @@ function generateCompose(config) {
   // 端口
   lines.push('    ports:');
   lines.push('      - "22:22"');
-  if (config.codeServer) lines.push('      - "8080:8080"');
+  if (config.codeServer) lines.push('      - "12345:12345"');
 
   // 持久化
   lines.push('    volumes:');
@@ -38,12 +38,6 @@ function generateCompose(config) {
   } else {
     lines.push('      - GIT_USER_EMAIL=${GIT_USER_EMAIL:-}');
   }
-  if (config.sshPrivateKey) {
-    const escaped = config.sshPrivateKey.replace(/\n/g, '\\n');
-    lines.push(`      - SSH_PRIVATE_KEY=${escaped}`);
-  } else {
-    lines.push('      - SSH_PRIVATE_KEY=${SSH_PRIVATE_KEY:-}');
-  }
   if (config.sshPublicKey) {
     lines.push(`      - SSH_PUBLIC_KEY=${config.sshPublicKey}`);
   } else {
@@ -57,6 +51,7 @@ function generateCompose(config) {
     }
   }
   if (config.cfTunnel) lines.push('      - CF_TUNNEL_TOKEN=${CF_TUNNEL_TOKEN:-}');
+  if (config.frpcEnabled) lines.push('      - FRPC_CONFIG_URL=${FRPC_CONFIG_URL:-}');
 
   // 命名卷声明（仅卷挂载模式需要）
   if (!isBindMount) {

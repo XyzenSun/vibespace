@@ -64,6 +64,9 @@ const URLS = {
     ccSwitch: {
       url: 'https://github.com/SaladDay/cc-switch-cli/releases/latest/download/install.sh',
     },
+    frpc: {
+      url: 'https://raw.githubusercontent.com/XyzenSun/vibespace/refs/heads/main/assets/app/frpc_latest',
+    },
   },
 
   /* ZCF 工作流 & 输出样式模板 */

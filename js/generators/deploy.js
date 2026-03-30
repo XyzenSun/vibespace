@@ -51,7 +51,7 @@ function generateDeploy(config) {
   lines.push('echo -e "${GREEN}[3/3] 构建完成!${NC}"');
   lines.push('echo ""');
   lines.push('echo -e "${YELLOW}================================================${NC}"');
-  lines.push('echo -e "${YELLOW} 请先编辑 docker-compose.yml 配置环境变量：${NC}"');
+  lines.push('echo -e "${YELLOW} 请先编辑 .env 配置环境变量：${NC}"');
   lines.push('echo -e "${YELLOW}================================================${NC}"');
   lines.push('echo ""');
 

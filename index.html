@@ -23,6 +23,7 @@
   <script src="js/generators/compose.js"></script>
   <script src="js/generators/deploy.js"></script>
   <script src="js/generators/cnb.js"></script>
+  <script src="js/generators/envFile.js"></script>
   <script src="js/utils/download.js"></script>
   <script src="js/utils/highlight.js"></script>
   <script src="js/app.js"></script>
@@ -161,9 +162,9 @@
           </div>
         </div>
 
-        <!-- 部署环境选择（下拉框） -->
+        <!-- 部署平台选择（下拉框） -->
         <div class="max-w-md mb-6">
-          <label class="text-sm font-medium text-gray-300 mb-2 block">部署环境</label>
+          <label class="text-sm font-medium text-gray-300 mb-2 block">部署平台</label>
           <select
             x-model="deployPlatform"
             class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm text-gray-300 focus:border-blue-500 outline-none cursor-pointer"
@@ -259,24 +260,16 @@
             <p class="text-xs text-gray-600 mt-1">SSH 登录密码，留空则使用默认密码 root123</p>
           </div>
 
-          <!-- SSH 密钥 -->
+          <!-- SSH 公钥 -->
           <div class="mb-6 max-w-2xl">
-            <h3 class="text-sm font-medium text-gray-300 mb-2">SSH 密钥 <span class="text-gray-600 font-normal">(可选)</span></h3>
-            <label class="text-xs text-gray-400 block mb-1">私钥</label>
-            <textarea
-              x-model="sshPrivateKey"
-              placeholder="粘贴 SSH 私钥内容，用于 Git 等操作..."
-              class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none resize-y font-mono"
-              rows="3"
-            ></textarea>
-            <label class="text-xs text-gray-400 block mb-1 mt-2">公钥</label>
+            <h3 class="text-sm font-medium text-gray-300 mb-2">SSH 公钥 <span class="text-gray-600 font-normal">(可选)</span></h3>
             <input
               type="text"
               x-model="sshPublicKey"
-              placeholder="ssh-rsa AAAA... (可选)"
+              placeholder="ssh-ed25519 AAAA... 或 ssh-rsa AAAA..."
               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none font-mono"
             >
-            <p class="text-xs text-gray-600 mt-1">密钥将写入 docker-compose.yml 环境变量，容器启动时自动配置到 ~/.ssh/</p>
+            <p class="text-xs text-gray-600 mt-1">公钥将添加到 ~/.ssh/authorized_keys，允许您通过私钥 SSH 连接到容器</p>
           </div>
 
           <!-- 扩展列表 -->
@@ -625,8 +618,8 @@
 
       <!-- 步骤 5: 其他工具 -->
       <div x-show="currentStep === 5" x-transition class="fade-in">
-        <h2 class="text-xl font-bold mb-2">🔧 其他工具</h2>
-        <p class="text-gray-500 text-sm mb-6">配置额外的工具和快捷命令</p>
+        <h2 class="text-xl font-bold mb-2">🔧 其他配置</h2>
+        <p class="text-gray-500 text-sm mb-6">配置额外的工具，如内网穿透，快捷指令，数据持久化方式与外部存储</p>
 
         <div class="space-y-6 max-w-2xl">
           <!-- Cloudflare Tunnel -->
@@ -656,12 +649,39 @@
             </div>
           </div>
 
+          <!-- FRP内网穿透 -->
+          <div class="border border-gray-700 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="font-bold text-sm">FRP内网穿透</h3>
+                <p class="text-gray-500 text-xs mt-0.5">通过 frp 实现内网穿透，需提供 frpc.toml/frpc.ini 配置文件下载地址（直链，推荐使用gist），建议在宿主机环境中使用 WireGuard、EasyTier 等安全的暴露端口方案，在云平台如 HuggingFace 中启用此选项有账号封禁风险</p>
+              </div>
+              <button
+                @click="frpcEnabled = !frpcEnabled"
+                :class="frpcEnabled ? 'active' : ''"
+                class="toggle-switch relative w-12 h-6 rounded-full bg-gray-700 cursor-pointer flex-shrink-0"
+              >
+                <span class="toggle-dot absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow"></span>
+              </button>
+            </div>
+            <div :class="frpcEnabled ? 'open' : ''" class="expand-content">
+              <label class="text-xs text-gray-400 block mb-1">frpc 配置文件下载地址 <span class="text-gray-600">(通过环境变量传入)</span></label>
+              <input
+                type="text"
+                x-model="frpcConfigUrl"
+                placeholder="FRPC_CONFIG_URL 环境变量"
+                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none"
+              >
+              <p class="text-gray-600 text-xs mt-1">确保 frpc.toml/frpc.ini 的下载链接为直链，可以使用 GitHub gist</p>
+            </div>
+          </div>
+
           <!-- Vibe 快捷命令 -->
           <div class="border border-gray-700 rounded-xl p-4">
             <div class="flex items-center justify-between mb-3">
               <div>
                 <h3 class="font-bold text-sm">Vibe 快捷命令</h3>
-                <p class="text-gray-500 text-xs mt-0.5">输入 vibe 即可执行指定命令</p>
+                <p class="text-gray-500 text-xs mt-0.5">输入 vibe 即可执行指定命令，默认为ClaudeCode特权模式</p>
               </div>
               <button
                 @click="vibeCommand = !vibeCommand"
@@ -702,6 +722,23 @@
               >
                 <h4 class="text-sm font-bold mb-1">目录挂载</h4>
                 <p class="text-gray-500 text-xs">映射到 ./workspace 和 ./root-data，方便直接访问</p>
+              </button>
+            </div>
+          </div>
+
+          <!-- .env 文件生成开关 (本机部署) -->
+          <div x-show="deployPlatform === 'local'" class="border border-gray-700 rounded-xl p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-sm">生成 .env 文件 <span class="text-gray-500 font-normal">（备用）</span></h3>
+                <p class="text-gray-500 text-xs mt-0.5">环境变量目前较少，无需用 .env 管理，此处仅为备用</p>
+              </div>
+              <button
+                @click="generateEnvFileEnabled = !generateEnvFileEnabled"
+                :class="generateEnvFileEnabled ? 'active' : ''"
+                class="toggle-switch relative w-12 h-6 rounded-full bg-gray-700 cursor-pointer flex-shrink-0"
+              >
+                <span class="toggle-dot absolute w-5 h-5 bg-white rounded-full top-0.5 left-0.5 transition-transform"></span>
               </button>
             </div>
           </div>
@@ -786,11 +823,11 @@
                   </div>
                 </div>
                 <div>
-                  <label class="text-xs text-gray-400 block mb-1">OSS_PATHS <span class="text-gray-600">(持久化目录，冒号分隔)</span></label>
+                  <label class="text-xs text-gray-400 block mb-1">OSS_PATHS <span class="text-gray-600">要持久化的目录(逗号分隔)</span></label>
                   <input
                     type="text"
                     x-model="ossPaths"
-                    placeholder="/root/.claude:/root/.cc-switch:/root/.local/share/code-server/User/globalStorage"
+                    placeholder="/root/.claude,/root/.cc-switch,/root/.local/share/code-server/User/globalStorage,/root/.vscode-server/data/User/globalStorage"
                     class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none font-mono"
                   >
                 </div>
@@ -931,6 +968,12 @@ ENV MY_APP_ENV=production</code></pre>
             class="tab-btn px-4 py-2 text-sm text-gray-400 hover:text-white border-b-2 border-transparent"
           >deploy.sh</button>
           <button
+            x-show="deployPlatform === 'local' && generateEnvFileEnabled"
+            @click="outputTab = 'envfile'"
+            :class="outputTab === 'envfile' ? 'active' : ''"
+            class="tab-btn px-4 py-2 text-sm text-gray-400 hover:text-white border-b-2 border-transparent"
+          >.env</button>
+          <button
             x-show="deployPlatform === 'cnb'"
             @click="outputTab = 'cnb'"
             :class="outputTab === 'cnb' ? 'active' : ''"
@@ -985,6 +1028,20 @@ ENV MY_APP_ENV=production</code></pre>
           </div>
           <div class="code-preview bg-gray-900 rounded-lg border border-gray-800 overflow-auto">
             <pre><code class="language-bash" x-text="generatedDeploy"></code></pre>
+          </div>
+        </div>
+
+        <!-- .env (仅本机部署) -->
+        <div x-show="outputTab === 'envfile' && deployPlatform === 'local'">
+          <div class="flex justify-end gap-2 mb-2">
+            <button id="copy-envfile" @click="copyToClipboard(generatedEnvFile, 'copy-envfile')" class="copy-btn text-xs text-gray-400 hover:text-white px-3 py-1 bg-gray-800 rounded">复制</button>
+            <button @click="downloadFile('.env', generatedEnvFile)" class="text-xs text-gray-400 hover:text-white px-3 py-1 bg-gray-800 rounded">下载</button>
+          </div>
+          <div class="bg-blue-950/30 border border-blue-800/50 rounded-lg p-3 mb-3">
+            <p class="text-blue-300 text-xs">💡 此文件包含您配置的环境变量，请根据需要修改敏感信息后再部署</p>
+          </div>
+          <div class="code-preview bg-gray-900 rounded-lg border border-gray-800 overflow-auto">
+            <pre><code class="language-bash" x-text="generatedEnvFile"></code></pre>
           </div>
         </div>
 

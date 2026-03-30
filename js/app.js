@@ -6,7 +6,7 @@ function appState() {
     totalSteps: 6,
     steps: [
       { num: 1, title: '宿主机环境', icon: '🌏' },
-      { num: 2, title: 'Code-Server', icon: '💻' },
+      { num: 2, title: '基础环境配置', icon: '💻' },
       { num: 3, title: '编程语言', icon: '🛠️' },
       { num: 4, title: 'AI 工具', icon: '🤖' },
       { num: 5, title: '其他工具', icon: '🔧' },
@@ -35,13 +35,15 @@ function appState() {
     gitUserEmail: '',
     rootPassword: '',
     csPassword: '',
-    sshPrivateKey: '',
     sshPublicKey: '',
     cfTunnel: false,
     cfToken: '',
+    frpcEnabled: false,
+    frpcConfigUrl: '',
     vibeCommand: false,
     vibeCommandText: DEFAULTS.vibeDefaultCommand,
     volumeMode: 'named',
+    generateEnvFileEnabled: false, // 是否生成 .env 文件，默认禁用
     customDockerfile: '',
     currentPreset: '',
 
@@ -53,7 +55,7 @@ function appState() {
     ossBucket: '',
     ossRegion: 'auto',
     ossProject: 'devbox',
-    ossPaths: '/root/.claude:/root/.cc-switch:/root/.local/share/code-server/User/globalStorage:/root/.vscode-server/data/User/globalStorage',
+    ossPaths: '/root/.claude,/root/.cc-switch,/root/.local/share/code-server/User/globalStorage,/root/.vscode-server/data/User/globalStorage',
     ossKeepCount: 5,
     ossSyncInterval: 5,
 
@@ -63,6 +65,7 @@ function appState() {
     generatedCompose: '',
     generatedDeploy: '',
     generatedCnbYml: '',
+    generatedEnvFile: '',
 
     /** 初始化：加载默认预设，监听配置变更自动重新生成 */
     init() {
@@ -73,9 +76,9 @@ function appState() {
         'aiTools', 'aiToolVersions', 'claudeMcpServers',
         'claudeWorkflows', 'claudeOutputStyle', 'claudeDisableTelemetry',
         'gitUserName', 'gitUserEmail',
-        'rootPassword', 'csPassword', 'sshPrivateKey', 'sshPublicKey',
-        'cfTunnel', 'cfToken', 'vibeCommand', 'vibeCommandText',
-        'volumeMode', 'customDockerfile',
+        'cfTunnel', 'cfToken', 'frpcEnabled', 'frpcConfigUrl',
+        'vibeCommand', 'vibeCommandText',
+        'volumeMode', 'generateEnvFileEnabled', 'customDockerfile',
         'ossEnabled', 'ossEndpoint', 'ossAccessKey', 'ossSecretKey', 'ossBucket',
         'ossRegion', 'ossProject', 'ossPaths', 'ossKeepCount', 'ossSyncInterval',
       ];
@@ -224,10 +227,11 @@ function appState() {
       this.gitUserEmail = p.gitUserEmail || '';
       this.rootPassword = p.rootPassword || '';
       this.csPassword = p.csPassword || '';
-      this.sshPrivateKey = p.sshPrivateKey || '';
       this.sshPublicKey = p.sshPublicKey || '';
       this.cfTunnel = p.cfTunnel;
       this.cfToken = p.cfToken;
+      this.frpcEnabled = p.frpcEnabled || false;
+      this.frpcConfigUrl = p.frpcConfigUrl || '';
       this.vibeCommand = p.vibeCommand;
       this.vibeCommandText = p.vibeCommandText;
       this.volumeMode = p.volumeMode || 'named';
@@ -248,12 +252,14 @@ function appState() {
           this.generatedCompose = '';
           this.generatedDeploy = '';
           this.generatedCnbYml = generateCnbYml(config);
+          this.generatedEnvFile = '';
           break;
         case 'local': // 本机/Docker
         default:
           this.generatedCompose = generateCompose(config);
           this.generatedDeploy = generateDeploy(config);
           this.generatedCnbYml = '';
+          this.generatedEnvFile = this.generateEnvFileEnabled ? generateEnvFile(config) : '';
           break;
       }
       this.$nextTick(() => highlightAll());
@@ -270,10 +276,11 @@ function appState() {
         claudeDisableTelemetry: this.claudeDisableTelemetry,
         gitUserName: this.gitUserName, gitUserEmail: this.gitUserEmail,
         rootPassword: this.rootPassword, csPassword: this.csPassword,
-        sshPrivateKey: this.sshPrivateKey, sshPublicKey: this.sshPublicKey,
         cfTunnel: this.cfTunnel, cfToken: this.cfToken,
+        frpcEnabled: this.frpcEnabled, frpcConfigUrl: this.frpcConfigUrl,
         vibeCommand: this.vibeCommand, vibeCommandText: this.vibeCommandText,
         volumeMode: this.volumeMode,
+        generateEnvFileEnabled: this.generateEnvFileEnabled,
         customDockerfile: this.customDockerfile,
         needsNodejs: this.needsNodejs(),
         // OSS 对象存储配置
@@ -328,6 +335,9 @@ function appState() {
         default:
           files['docker-compose.yml'] = this.generatedCompose;
           files['deploy.sh'] = this.generatedDeploy;
+          if (this.generatedEnvFile) {
+            files['.env'] = this.generatedEnvFile;
+          }
           break;
       }
       await downloadAllAsZip(files);

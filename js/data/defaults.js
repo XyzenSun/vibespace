@@ -103,6 +103,10 @@ const DEFAULTS = {
     url: URLS.tools.ccSwitch.url,
     mirrorUrl: URLS.withGhProxy(URLS.tools.ccSwitch.url),
   },
+  frpc: {
+    url: URLS.tools.frpc.url,
+    mirrorUrl: URLS.withGhProxy(URLS.tools.frpc.url),
+  },
 
   /* MCP Server 预设 */
   mcpPresets: [
@@ -234,7 +238,7 @@ const DEFAULTS = {
       aiTools: ['cc-switch', 'claude-code'], aiToolVersions: {},
       claudeWorkflows: [],
       claudeOutputStyle: 'default',
-      cfTunnel: false, cfToken: '', cnbProjectName: '', volumeMode: 'named',
+      cfTunnel: false, cfToken: '', frpcEnabled: false, frpcConfigUrl: '', cnbProjectName: '', volumeMode: 'named',
       vibeCommand: true, vibeCommandText: 'IS_SANDBOX=1 claude --dangerously-skip-permissions',
       customDockerfile: '',
     },

@@ -43,6 +43,7 @@ function appState() {
     vibeCommand: false,
     vibeCommandText: DEFAULTS.vibeDefaultCommand,
     volumeMode: 'named',
+    generateEnvFileEnabled: false, // 是否生成 .env 文件，默认禁用
     customDockerfile: '',
     currentPreset: '',
 
@@ -77,7 +78,7 @@ function appState() {
         'gitUserName', 'gitUserEmail',
         'cfTunnel', 'cfToken', 'frpcEnabled', 'frpcConfigUrl',
         'vibeCommand', 'vibeCommandText',
-        'volumeMode', 'customDockerfile',
+        'volumeMode', 'generateEnvFileEnabled', 'customDockerfile',
         'ossEnabled', 'ossEndpoint', 'ossAccessKey', 'ossSecretKey', 'ossBucket',
         'ossRegion', 'ossProject', 'ossPaths', 'ossKeepCount', 'ossSyncInterval',
       ];
@@ -258,7 +259,7 @@ function appState() {
           this.generatedCompose = generateCompose(config);
           this.generatedDeploy = generateDeploy(config);
           this.generatedCnbYml = '';
-          this.generatedEnvFile = generateEnvFile(config);
+          this.generatedEnvFile = this.generateEnvFileEnabled ? generateEnvFile(config) : '';
           break;
       }
       this.$nextTick(() => highlightAll());
@@ -279,6 +280,7 @@ function appState() {
         frpcEnabled: this.frpcEnabled, frpcConfigUrl: this.frpcConfigUrl,
         vibeCommand: this.vibeCommand, vibeCommandText: this.vibeCommandText,
         volumeMode: this.volumeMode,
+        generateEnvFileEnabled: this.generateEnvFileEnabled,
         customDockerfile: this.customDockerfile,
         needsNodejs: this.needsNodejs(),
         // OSS 对象存储配置
@@ -333,7 +335,9 @@ function appState() {
         default:
           files['docker-compose.yml'] = this.generatedCompose;
           files['deploy.sh'] = this.generatedDeploy;
-          files['.env'] = this.generatedEnvFile;
+          if (this.generatedEnvFile) {
+            files['.env'] = this.generatedEnvFile;
+          }
           break;
       }
       await downloadAllAsZip(files);

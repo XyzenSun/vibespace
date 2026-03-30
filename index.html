@@ -726,6 +726,23 @@
             </div>
           </div>
 
+          <!-- .env 文件生成开关 (本机部署) -->
+          <div x-show="deployPlatform === 'local'" class="border border-gray-700 rounded-xl p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-sm">生成 .env 文件 <span class="text-gray-500 font-normal">（备用）</span></h3>
+                <p class="text-gray-500 text-xs mt-0.5">环境变量目前较少，无需用 .env 管理，此处仅为备用</p>
+              </div>
+              <button
+                @click="generateEnvFileEnabled = !generateEnvFileEnabled"
+                :class="generateEnvFileEnabled ? 'active' : ''"
+                class="toggle-switch relative w-12 h-6 rounded-full bg-gray-700 cursor-pointer flex-shrink-0"
+              >
+                <span class="toggle-dot absolute w-5 h-5 bg-white rounded-full top-0.5 left-0.5 transition-transform"></span>
+              </button>
+            </div>
+          </div>
+
           <!-- OSS 对象存储持久化 (CNB 平台) -->
           <div x-show="deployPlatform === 'cnb'" class="border border-gray-700 rounded-xl p-4">
             <div class="flex items-center justify-between mb-3">
@@ -951,7 +968,7 @@ ENV MY_APP_ENV=production</code></pre>
             class="tab-btn px-4 py-2 text-sm text-gray-400 hover:text-white border-b-2 border-transparent"
           >deploy.sh</button>
           <button
-            x-show="deployPlatform === 'local'"
+            x-show="deployPlatform === 'local' && generateEnvFileEnabled"
             @click="outputTab = 'envfile'"
             :class="outputTab === 'envfile' ? 'active' : ''"
             class="tab-btn px-4 py-2 text-sm text-gray-400 hover:text-white border-b-2 border-transparent"

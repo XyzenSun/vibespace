@@ -82,6 +82,7 @@ const DEFAULTS = {
     { id: 'cc-switch', label: 'CC-Switch', desc: 'ClaudeCode/Codex 提供商 MCP Skils管理工具', hasVersion: false, isScript: true },
     { id: 'claude-code', label: 'Claude Code', desc: 'Anthropic CLI 开发工具', hasVersion: true, defaultVersion: 'latest', npmPkg: '@anthropic-ai/claude-code', hasMcp: true },
     { id: 'ccline', label: 'CCLine', desc: 'Claude Code 状态行工具', hasVersion: false, npmPkg: '@cometix/ccline', requiresTool: 'claude-code' },
+    { id: 'claude-code-router', label: 'Claude Code Router', desc: '将Gemini/Openai格式转换为anthropic格式', hasVersion: false, npmPkg: '@musistudio/claude-code-router', requiresTool: 'claude-code' },
   ],
 
   /* 中国镜像源 */

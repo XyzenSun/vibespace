@@ -36,7 +36,7 @@ function generateEntrypoint(config) {
     lines.push('OSS_BUCKET="${OSS_BUCKET:-}"');
     lines.push('OSS_REGION="${OSS_REGION:-auto}"');
     lines.push('OSS_PROJECT="${OSS_PROJECT:-devbox}"');
-    lines.push('OSS_PATHS="${OSS_PATHS:-/root/.claude,/root/.cc-switch,/root/.local/share/code-server/User/globalStorage,/root/.vscode-server/data/User/globalStorage}"');
+    lines.push('OSS_PATHS="${OSS_PATHS:-/root/.claude,/root/.ssh,/root/.cc-switch,/root/.local/share/code-server/User/globalStorage,/root/.vscode-server/data/User/globalStorage}"');
     lines.push('OSS_KEEP_COUNT="${OSS_KEEP_COUNT:-5}"');
     lines.push('OSS_SYNC_INTERVAL="${OSS_SYNC_INTERVAL:-5}"');
     lines.push('');

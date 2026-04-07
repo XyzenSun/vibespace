@@ -65,15 +65,6 @@ restart_frpc() {
     start_frpc
 }
 
-# 支持 --frp 参数
-if [ "$1" = "--frp" ]; then
-    case "$2" in
-        start)   start_frpc; exit $? ;;
-        stop)    stop_frpc; exit $? ;;
-        restart) restart_frpc; exit $? ;;
-        *)       echo "用法: $0 --frp [start|stop|restart]"; exit 1 ;;
-    esac
-fi
 
 # ============================================
 # Vibespace 管理菜单

@@ -260,8 +260,6 @@ function generateEntrypoint(config) {
     lines.push('    exit $?');
     lines.push('fi');
     lines.push('');
-    lines.push('rm -f /root/syncflag.txt');
-    lines.push('');
   }
 
   // FRPC 函数定义和参数处理（独立于部署平台）
@@ -329,16 +327,6 @@ function generateEntrypoint(config) {
     lines.push('    sleep 1');
     lines.push('    start_frpc');
     lines.push('}');
-    lines.push('');
-    lines.push('# 支持 --frp 参数');
-    lines.push('if [ "$1" = "--frp" ]; then');
-    lines.push('    case "$2" in');
-    lines.push('        start)   start_frpc; exit $? ;;');
-    lines.push('        stop)    stop_frpc; exit $? ;;');
-    lines.push('        restart) restart_frpc; exit $? ;;');
-    lines.push('        *)       echo "用法: $0 --frp [start|stop|restart]"; exit 1 ;;');
-    lines.push('    esac');
-    lines.push('fi');
     lines.push('');
   }
 
@@ -443,6 +431,7 @@ function generateEntrypoint(config) {
   // 从对象存储恢复 (仅 CNB)
   if (isCnb) {
     lines.push('# --- 从对象存储恢复 ---');
+    lines.push('rm -f /root/syncflag.txt');
     lines.push('restore_snapshot');
     lines.push('');
   }

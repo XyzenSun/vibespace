@@ -247,12 +247,9 @@ function generateEntrypoint(config) {
     lines.push('}');
     lines.push('');
 
-    // 主流程 --sync 参数支持
-    lines.push('# ============================================');
-    lines.push('# 主流程');
-    lines.push('# ============================================');
-    lines.push('');
+      lines.push('# ============================================');
     lines.push('# 支持 --sync 参数，仅执行上传（用于 cron 定时任务）');
+    lines.push('# ============================================');
     lines.push('if [ "$1" = "--sync" ]; then');
     lines.push('    # cron 无法继承容器环境变量，从 PID 1 (容器主进程) 读取');
     lines.push('    eval $(cat /proc/1/environ | tr \'\\0\' \'\\n\' | grep -E \'^OSS_\' | sed \'s/^/export /\')');
@@ -332,9 +329,8 @@ function generateEntrypoint(config) {
 
   // --commands 参数（始终生成，方便后期扩展）
   lines.push('# ============================================');
-  lines.push('# Vibespace 管理菜单');
-  lines.push('# ============================================');
   lines.push('# 支持 --commands 参数（交互式菜单）');
+  lines.push('# ============================================');
   lines.push('if [ "$1" = "--commands" ]; then');
   lines.push('    echo "============================================"');
   lines.push('    echo "  Vibespace 管理菜单"');
@@ -420,6 +416,11 @@ function generateEntrypoint(config) {
   lines.push('fi');
   lines.push('');
 
+  lines.push('# ============================================');
+  lines.push('# 容器启动执行');
+  lines.push('# ============================================');
+  lines.push('');
+
   // DNS (构建阶段 resolv.conf 只读，在运行时配置)
   if (isChina) {
     lines.push('# --- DNS ---');
@@ -488,15 +489,14 @@ function generateEntrypoint(config) {
     lines.push('');
   }
 
-  // FRPC 内网穿透 - 仅下载二进制和启动（函数定义已移至 restore_snapshot 之前）
+  // FRPC 内网穿透 - 仅下载二进制，容器启动主流程中再决定是否启动
   if (frpcEnabled) {
     const frpcUrl = isChina ? DEFAULTS.frpc.mirrorUrl : DEFAULTS.frpc.url;
     lines.push('# --- FRPC 内网穿透 ---');
-    lines.push('# 下载 frpc 二进制并启动');
+    lines.push('# 下载 frpc 二进制');
     lines.push('if [ -n "$FRPC_CONFIG_URL" ]; then');
     lines.push(`    wget -q -O /usr/local/bin/frpc "${frpcUrl}"`);
     lines.push('    chmod +x /usr/local/bin/frpc');
-    lines.push('    start_frpc');
     lines.push('fi');
     lines.push('');
   }
@@ -507,92 +507,6 @@ function generateEntrypoint(config) {
     lines.push('setup_periodic_sync');
     lines.push('');
   }
-
-  // 动态生成 README
-  lines.push('# --- README ---');
-  lines.push('cat > /workspace/README.md << \'READMEEOF\'');
-  lines.push('# Development Environment');
-  lines.push('');
-
-  if (config.languages.length) {
-    lines.push('## 已安装的工具');
-    lines.push('');
-    lines.push('### 编程语言');
-    config.languages.forEach(langId => {
-      const lang = DEFAULTS.languages.find(l => l.id === langId);
-      if (lang) lines.push(`- ${lang.label}`);
-    });
-    lines.push('');
-  }
-
-  if (config.aiTools.length) {
-    lines.push('### AI 工具');
-    config.aiTools.forEach(toolId => {
-      const tool = DEFAULTS.aiTools.find(t => t.id === toolId);
-      if (tool) lines.push(`- ${tool.label}: ${tool.desc}`);
-    });
-    lines.push('');
-
-    // Claude Code 工作流和输出样式信息
-    if (config.aiTools.includes('claude-code')) {
-      const workflows = config.claudeWorkflows || [];
-      const outputStyle = config.claudeOutputStyle;
-
-      if (workflows.length > 0) {
-        lines.push('### Claude Code 工作流');
-        workflows.forEach(wfId => {
-          const wf = DEFAULTS.claudeWorkflows.find(w => w.id === wfId);
-          if (wf) lines.push(`- ${wf.label}: ${wf.desc}`);
-        });
-        lines.push('');
-        lines.push('> 使用方式: 在 Claude Code 中输入 `/zcf:命令名` 调用工作流');
-        lines.push('');
-      }
-
-      if (outputStyle) {
-        const style = DEFAULTS.claudeOutputStyles.find(s => s.id === outputStyle);
-        if (style) {
-          lines.push('### Claude Code 输出样式');
-          lines.push(`- **${style.label}**: ${style.desc}`);
-          lines.push('');
-        }
-      }
-    }
-  }
-
-  if (config.vibeCommand) {
-    lines.push('### 快捷命令');
-    lines.push(`输入 \`vibe\` 即可执行: \`${config.vibeCommandText}\``);
-    lines.push('');
-  }
-
-  lines.push('## 环境变量');
-  lines.push('- `ROOT_PASSWORD`: SSH root 密码 (默认: root123)');
-  lines.push('- `GIT_USER_NAME`: Git 用户名');
-  lines.push('- `GIT_USER_EMAIL`: Git 邮箱');
-  lines.push('- `SSH_PUBLIC_KEY`: SSH 公钥 (用于连接容器)');
-  if (config.codeServer) lines.push('- `CS_PASSWORD`: Code-Server 密码 (不设置则免密)');
-  if (config.cfTunnel) lines.push('- `CF_TUNNEL_TOKEN`: Cloudflare Tunnel Token');
-  if (config.frpcEnabled) lines.push('- `FRPC_CONFIG_URL`: frpc 配置文件下载地址');
-
-  // OSS 环境变量说明 (仅 CNB)
-  if (isCnb) {
-    lines.push('');
-    lines.push('### 对象存储持久化');
-    lines.push('- `OSS_ENABLED`: 启用持久化 (true/false)');
-    lines.push('- `OSS_ENDPOINT`: S3 endpoint');
-    lines.push('- `OSS_ACCESS_KEY`: Access Key ID');
-    lines.push('- `OSS_SECRET_KEY`: Secret Access Key');
-    lines.push('- `OSS_BUCKET`: 桶名');
-    lines.push('- `OSS_REGION`: 区域 (默认 auto)');
-    lines.push('- `OSS_PROJECT`: 项目名，用于快照文件命名前缀 (默认 devbox)');
-    lines.push('- `OSS_PATHS`: 持久化目录列表 (逗号分隔)');
-    lines.push('- `OSS_KEEP_COUNT`: 保留快照数 (默认 5)');
-    lines.push('- `OSS_SYNC_INTERVAL`: 同步间隔分钟 (默认 5)');
-  }
-
-  lines.push('READMEEOF');
-  lines.push('');
 
   // 启动服务
   lines.push('# --- 启动 ---');

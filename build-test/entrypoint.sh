@@ -67,9 +67,8 @@ restart_frpc() {
 
 
 # ============================================
-# Vibespace 管理菜单
-# ============================================
 # 支持 --commands 参数（交互式菜单）
+# ============================================
 if [ "$1" = "--commands" ]; then
     echo "============================================"
     echo "  Vibespace 管理菜单"
@@ -164,49 +163,15 @@ if [ -n "$CF_TUNNEL_TOKEN" ]; then
 fi
 
 # --- FRPC 内网穿透 ---
-# 下载 frpc 二进制并启动
+# 下载 frpc 二进制
 if [ -n "$FRPC_CONFIG_URL" ]; then
     wget -q -O /usr/local/bin/frpc "https://gh-proxy.org/https://raw.githubusercontent.com/XyzenSun/vibespace/refs/heads/main/assets/app/frpc_latest"
     chmod +x /usr/local/bin/frpc
-    start_frpc
 fi
 
-# --- README ---
-cat > /workspace/README.md << 'READMEEOF'
-# Development Environment
-
-## 已安装的工具
-
-### 编程语言
-- Node.js / Ts / npm
-- Go
-- C
-- Python
-- Rust
-- Java
-- C++
-
-### AI 工具
-- CC-Switch: ClaudeCode/Codex 提供商 MCP Skils管理工具
-- Claude Code: Anthropic CLI 开发工具
-- CCLine: Claude Code 状态行工具
-- Claude Code Router: 将Gemini/Openai格式转换为anthropic格式
-
-### Claude Code 输出样式
-- **默认**: Claude Code 默认输出样式
-
-### 快捷命令
-输入 `vibe` 即可执行: `IS_SANDBOX=1 claude --dangerously-skip-permissions`
-
-## 环境变量
-- `ROOT_PASSWORD`: SSH root 密码 (默认: root123)
-- `GIT_USER_NAME`: Git 用户名
-- `GIT_USER_EMAIL`: Git 邮箱
-- `SSH_PUBLIC_KEY`: SSH 公钥 (用于连接容器)
-- `CS_PASSWORD`: Code-Server 密码 (不设置则免密)
-- `CF_TUNNEL_TOKEN`: Cloudflare Tunnel Token
-- `FRPC_CONFIG_URL`: frpc 配置文件下载地址
-READMEEOF
+# ============================================
+# 容器启动执行
+# ============================================
 
 # --- 启动 ---
 /usr/sbin/sshd

@@ -627,7 +627,7 @@
             <div class="flex items-center justify-between mb-3">
               <div>
                 <h3 class="font-bold text-sm">Cloudflare Tunnel</h3>
-                <p class="text-gray-500 text-xs mt-0.5">内网穿透，安全暴露本地服务。在云平台如 HuggingFace 中启用此选项有账号封禁风险；如果您位于中国且在自己的机器中部署，建议在宿主机环境中使用 WireGuard、EasyTier 等安全的暴露端口方案，Tunnel 在中国连通性不佳</p>
+                <p class="text-gray-500 text-xs mt-0.5">内网穿透，安全暴露本地服务。在云平台如 HuggingFace CNB 中启用此选项有账号封禁风险；如果您位于中国且在自己的机器中部署，建议在宿主机环境中使用 WireGuard、EasyTier 等安全的暴露端口方案，Tunnel 在中国连通性不佳</p>
               </div>
               <button
                 @click="cfTunnel = !cfTunnel"
@@ -654,7 +654,7 @@
             <div class="flex items-center justify-between mb-3">
               <div>
                 <h3 class="font-bold text-sm">FRP内网穿透</h3>
-                <p class="text-gray-500 text-xs mt-0.5">通过 frp 实现内网穿透，需提供 frpc.toml/frpc.ini 配置文件下载地址（直链，推荐使用gist），建议在宿主机环境中使用 WireGuard、EasyTier 等安全的暴露端口方案，在云平台如 HuggingFace 中启用此选项有账号封禁风险</p>
+                <p class="text-gray-500 text-xs mt-0.5">通过 frp 实现内网穿透，需提供 frpc.toml/frpc.ini 配置文件下载地址（直链，推荐使用gist），建议在宿主机环境中使用 WireGuard、EasyTier 等安全的暴露端口方案，在云平台如 HuggingFace ，CNB 中启用此选项有账号封禁风险</p>
               </div>
               <button
                 @click="frpcEnabled = !frpcEnabled"

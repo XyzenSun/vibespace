@@ -57,7 +57,6 @@ function generateCnbYml(config) {
     lines.push(`        OSS_PROJECT: "${config.ossProject || 'devbox'}"`);
     lines.push(`        OSS_PATHS: "${config.ossPaths || '/root/.ssh,/root/.claude,/root/.cc-switch,/root/.local/share/code-server/User/globalStorage'}"`);
     lines.push(`        OSS_KEEP_COUNT: "${config.ossKeepCount || 5}"`);
-    lines.push(`        OSS_SYNC_INTERVAL: "${config.ossSyncInterval || 5}"`);
   }
 
   // services

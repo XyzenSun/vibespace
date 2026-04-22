@@ -26,8 +26,7 @@ function generateEntrypoint(config) {
     lines.push('# OSS_REGION: 区域 (默认 auto)');
     lines.push('# OSS_PROJECT: 项目名，用于快照文件命名前缀 (默认 devbox)');
     lines.push('# OSS_PATHS: 要持久化的目录列表 (逗号分隔)');
-    lines.push('# OSS_KEEP_COUNT: 保留快照数量 (默认 3)');
-    lines.push('# OSS_SYNC_INTERVAL: 同步间隔分钟 (默认 30)');
+    lines.push('# OSS_KEEP_COUNT: 保留快照数量 (默认 5)');
     lines.push('');
     lines.push(`OSS_ENABLED="${ossEnabled ? 'true' : '${OSS_ENABLED:-true}'}"`);
     lines.push('OSS_ENDPOINT="${OSS_ENDPOINT:-}"');
@@ -38,7 +37,6 @@ function generateEntrypoint(config) {
     lines.push('OSS_PROJECT="${OSS_PROJECT:-devbox}"');
     lines.push('OSS_PATHS="${OSS_PATHS:-/root/.claude,/root/.ssh,/root/.cc-switch,/root/.local/share/code-server/User/globalStorage,/root/.vscode-server/data/User/globalStorage}"');
     lines.push('OSS_KEEP_COUNT="${OSS_KEEP_COUNT:-5}"');
-    lines.push('OSS_SYNC_INTERVAL="${OSS_SYNC_INTERVAL:-5}"');
     lines.push('');
     lines.push('# rclone 内联配置字符串');
     lines.push('RCLONE_REMOTE=":s3,provider=Other,access_key_id=\'${OSS_ACCESS_KEY}\',secret_access_key=\'${OSS_SECRET_KEY}\',region=\'${OSS_REGION}\',endpoint=\'${OSS_ENDPOINT}\'"');
@@ -218,45 +216,7 @@ function generateEntrypoint(config) {
     lines.push('}');
     lines.push('');
 
-    // setup_periodic_sync 函数
-    lines.push('# ============================================');
-    lines.push('# 函数: 定时同步 (cron)');
-    lines.push('# ============================================');
-    lines.push('setup_periodic_sync() {');
-    lines.push('    if [ "$OSS_ENABLED" != "true" ]; then');
-    lines.push('        return 0');
-    lines.push('    fi');
-    lines.push('');
-    lines.push('    # 使用 /etc/cron.d/ 目录，避免覆盖其他 cron 任务');
-    lines.push('    cat > /etc/cron.d/oss-sync << \'CRON_EOF\'');
-    lines.push('# OSS 定时同步任务');
-    lines.push('*/OSS_SYNC_INTERVAL * * * * root /usr/local/bin/entrypoint.sh --sync >> /var/log/oss-sync.log 2>&1');
-    lines.push('');
-    lines.push('CRON_EOF');
-    lines.push('');
-    lines.push('    # 替换间隔变量');
-    lines.push('    sed -i "s/OSS_SYNC_INTERVAL/${OSS_SYNC_INTERVAL}/g" /etc/cron.d/oss-sync');
-    lines.push('');
-    lines.push('    # 设置正确权限');
-    lines.push('    chmod 644 /etc/cron.d/oss-sync');
-    lines.push('');
-    lines.push('    # 启动 cron 服务');
-    lines.push('    service cron start 2>/dev/null || cron 2>/dev/null || true');
-    lines.push('');
-    lines.push('    echo "[OSS] 定时同步已启用，间隔 ${OSS_SYNC_INTERVAL} 分钟"');
-    lines.push('}');
-    lines.push('');
-
-      lines.push('# ============================================');
-    lines.push('# 支持 --sync 参数，仅执行上传（用于 cron 定时任务）');
-    lines.push('# ============================================');
-    lines.push('if [ "$1" = "--sync" ]; then');
-    lines.push('    # cron 无法继承容器环境变量，从 PID 1 (容器主进程) 读取');
-    lines.push('    eval $(cat /proc/1/environ | tr \'\\0\' \'\\n\' | grep -E \'^OSS_\' | sed \'s/^/export /\')');
-    lines.push('    upload_snapshot');
-    lines.push('    exit $?');
-    lines.push('fi');
-    lines.push('');
+    // 注意: 不再自动同步，仅保留手动上传/下载功能
   }
 
   // FRPC 函数定义和参数处理（独立于部署平台）
@@ -498,13 +458,6 @@ function generateEntrypoint(config) {
     lines.push(`    wget -q -O /usr/local/bin/frpc "${frpcUrl}"`);
     lines.push('    chmod +x /usr/local/bin/frpc');
     lines.push('fi');
-    lines.push('');
-  }
-
-  // 设置定时同步 (仅 CNB)
-  if (isCnb) {
-    lines.push('# --- 设置定时同步 ---');
-    lines.push('setup_periodic_sync');
     lines.push('');
   }
 

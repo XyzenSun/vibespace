@@ -57,7 +57,6 @@ function appState() {
     ossProject: 'devbox',
     ossPaths: '/root/.shh,/root/.claude,/root/.cc-switch,/root/.local/share/code-server/User/globalStorage,/root/.vscode-server/data/User/globalStorage',
     ossKeepCount: 5,
-    ossSyncInterval: 5,
 
     /* 生成结果 */
     generatedDockerfile: '',
@@ -80,7 +79,7 @@ function appState() {
         'vibeCommand', 'vibeCommandText',
         'volumeMode', 'generateEnvFileEnabled', 'customDockerfile',
         'ossEnabled', 'ossEndpoint', 'ossAccessKey', 'ossSecretKey', 'ossBucket',
-        'ossRegion', 'ossProject', 'ossPaths', 'ossKeepCount', 'ossSyncInterval',
+        'ossRegion', 'ossProject', 'ossPaths', 'ossKeepCount',
       ];
       watched.forEach(key => this.$watch(key, () => this.generate()));
     },
@@ -293,7 +292,6 @@ function appState() {
         ossProject: this.ossProject,
         ossPaths: this.ossPaths,
         ossKeepCount: this.ossKeepCount,
-        ossSyncInterval: this.ossSyncInterval,
       };
     },
 
